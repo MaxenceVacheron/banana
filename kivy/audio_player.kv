@@ -1,0 +1,28 @@
+<MySlider@Slider>:
+    canvas:
+        Clear
+        Color:
+            rgb: (0.2, 0.2, 0.2)
+        Rectangle:
+            pos: self.pos
+            size: self.width, self.height
+        Color:
+            rgb: (1, 0, 0)
+        Rectangle:
+            pos: self.pos
+            size: self.width * (self.value_normalized if self.orientation == 'horizontal' else 1), self.height * (self.value_normalized if self.orientation == 'vertical' else 1)
+
+<MyLayout@BoxLayout>:
+    padding: 5, 5
+    spacing: 5
+    size_hint: .75, .75
+    Button:
+        text: "Play"
+        on_press: app.buttonCallback()
+        size_hint: .60, 1
+    MySlider:
+        id: volume_slider
+        step: 1
+        on_value: app.sliderCallback(self.value)
+        orientation: 'vertical'
+        size_hint: .20, 1
