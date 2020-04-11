@@ -7,7 +7,7 @@ from kivy.uix.label import Label
 
 class YourApp(App):
     def build(self):
-        root_widget = BoxLayout(orientation='vertical')
+        root_widget = BoxLayout(orientation=' ')
 
         output_label = Label(size_hint_y=1)
 

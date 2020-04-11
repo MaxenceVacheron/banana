@@ -1,2 +1,26 @@
-<Button>:
-    background_color: (1,1,0,1)
+<UI>:
+    orientation: 'vertical'
+    # TextInput:
+    #     id: main_textinput
+    #     font_size: 42
+    #     height : 50
+    #     text: 'Type here'
+    FloatLayout:
+        BoxLayout:
+            orientation: 'vertical'
+            Label:
+                id : song_name
+                text: 'song_name_place_holder'
+
+            Image:
+                source: 'sample.jpg'
+                # size_hint: None, None
+                # size: 400, 400
+                # size: self.texture_size[0] / 2, self.texture_size[1] / 2
+                # opacity: 0.1
+            Button:
+                id: play_button
+                text: 'Play Button'
+        
+
+                
