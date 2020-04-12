@@ -74,15 +74,3 @@ m3u_playlist.close()
 print('Final playlist is:')
 print(playlist)
 
-# readable_playlist = []
-# print(readable_playlist)
-# for file_corresponding_song in playlist:
-#     corresponding_song = EasyID3(file_corresponding_song)
-#     corresponding_title = corresponding_song['title']
-#     corresponding_artist = corresponding_song['artist']
-#     print(corresponding_artist + corresponding_title)
-# #     corresponding_artist = corresponding_artist.append(corresponding_title)
-# #     readable_playlist.append(corresponding_artist)
-# # print(readable_playlist)
-
-

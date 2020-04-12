@@ -13,10 +13,13 @@ from kivy.uix.image import Image
 
 
 
-
 class UI(BoxLayout):
-    def funcname(self, *args):
-        play_button = self.ids['play_button']
+    # def __init__(self, **kwargs):
+    #     pass
+    def play_button(self):
+        print('Play Button pressed')
+        # self.name.text = ""
+        # self.email.text = ""
 
 class banana(App):
         def build(self):
