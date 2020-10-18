@@ -1,0 +1,54 @@
+version: "3"
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: always
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - banana-api
+
+  web:
+    image: nginx:1.19-alpine
+    restart: always
+    depends_on:
+      - php
+    ports:
+      - 80:80
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/conf/vhost.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - banana-api
+
+  db:
+    image: mariadb:10.5.6-focal
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: banana
+      MYSQL_DATABASE: banana
+      MYSQL_USER: banana
+      MYSQL_PASSWORD: banana
+    volumes:
+        - ./db:/etc/lib/mysql/banana
+    expose:
+      - "3306"
+    ports:
+      - 3306:3306
+    networks:
+      - banana-api
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - banana-api
+
+networks:
+  banana-api:
+    driver: "bridge"
