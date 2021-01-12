@@ -1,0 +1,7 @@
+{
+    "name": "maxou/banana",
+    "description": "banana",
+    "require": {
+        "james-heinrich/getid3": "^1.9"
+    }
+}

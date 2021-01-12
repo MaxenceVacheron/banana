@@ -1,0 +1,10 @@
+body {
+	font-family: "Avenir", sans-serif;
+	transition: background-color .5s;
+	background-color: lightgrey;
+	font-size: 22px;
+}
+
+.navigator-cover {
+	width: 25%;
+}
