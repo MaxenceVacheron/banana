@@ -1,28 +1,23 @@
+<?php session_start();
+?>
+
 <!doctype html>
 
 <html lang='en'>
 <head>
   <meta charset='utf-8'>
 
-  <title>The HTML5 Herald</title>
-  <meta name='description' content='The HTML5 Herald'>
-  <meta name='author' content='SitePoint'>
+  <title>Banana</title>
+  <meta name='description' content='Banana'>
+  <meta name='MaxenceVacheron' content='SitePoint'>
 
   <link rel='stylesheet' href='../css/main.css'>	
   <script src='../js/scripts.js'></script>
 </head>
 
 <body>
-	<header>
-		<span>
-			<h1>Banana</h1>
-			<span id='menu'>
-			</span>
-				<a href='../pages/index.php' id='navigatorButton'>To the Sea!</a>
-				<a href='/download-manager.php' id='downloadManagerButton'>Download Manager</a>
-			
-		</span>
-	</header>
+	<?php require '../view/header.php' ?>
+	
 	<main>
 		<div id='navigator'>
 			<h5 id='navigatorCurrentDir'></h5>

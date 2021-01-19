@@ -5,6 +5,10 @@ body {
 	font-size: 22px;
 }
 
-.navigator-cover {
-	width: 25%;
+/* .navigator-cover { */
+	/* width: 25%; */
+/* } */
+
+.navigator {
+	border : 1px solid red;
 }
