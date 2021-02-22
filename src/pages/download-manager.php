@@ -13,24 +13,34 @@
 
   <link rel='stylesheet' href='../css/main.css'>	
   <script src='../js/scripts.js'></script>
+  <style>
+	  #navigatorView {
+		border: 1px yellow solid;
+		display: flex;
+		flex-flow: row nowrap;
+	  }
+	  #sourceMenu {
+		border: 1px yellow solid;
+		display: flex;
+		flex-flow: column nowrap;
+	  }
+  </style>
 </head>
 
 <body>
 	<?php require '../view/header.php' ?>
-	
 	<main>
-		<div id='navigator'>
-			<h5 id='navigatorCurrentDir'></h5>
-			<div id='navigatorDirNavigator'>
-
+		<div id='navigatorView'>
+			<div id='sourceMenu'>
+				<a href='/pages/download-manager.php?listCompleteDir=true'> FLS </a>
+				<a href='/pages/download-manager.php?listYT=true'> YTB </a>
 			</div>
-			<div id='navigatorView'>
-				<?php require '../view/navigator.php' ?>
+			<div>
+				<?php require '../view/dir_navigator.php' ?>
+				<?php require '../view/yt_navigator.php' ?>
 			</div>
 		</div>
 	</main>
 	<footer>Copyright © Maxence Vacheron <?php echo date("Y"); ?></footer> 
 </body>
-
-
 </html>

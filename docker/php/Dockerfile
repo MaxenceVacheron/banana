@@ -8,7 +8,7 @@ RUN apt-get update && \
         libmcrypt-dev \
         libssl-dev \
         zip unzip \
-        nodejs \
+        # nodejs \
         npm \
         wget \
         vim

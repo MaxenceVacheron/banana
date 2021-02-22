@@ -22,6 +22,12 @@ require_once '../vendor/james-heinrich/getid3/getid3/getid3.php';
     }
 }
 
+.listing:hover {
+    box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.1);
+	background-color: lightcyan ;
+}
+
+
 .songs-listing {
 	border: 1px solid blueviolet;
 	padding: 5% 5% 5% 5% ;
@@ -61,60 +67,26 @@ require_once '../vendor/james-heinrich/getid3/getid3/getid3.php';
 	border: 1px solid darkred;
 	/* position: absolute; */
 	/* right: 20%; */
-	
-}
 
-/* 
-. {
-}*/
+}
 
 </style>
 </head>
 
 
 <div class="navigator">
-<a href='/pages/index.php?listDirGO=bite' style="float: right;">List Songs</a>
-
-<form method="GET" action="<?php $_SERVER["PHP_SELF"] ?>">
-Dir: <input type="text" name="listCompleteDir" value="../data/mix24/synced/">
-</form>
-
-<?php
-
-
-// echo $_SERVER["PHP_SELF"];
-if (isset($_GET['listCompleteDir'])){
-	$_SESSION['listCompleteDir'] = $_GET['listCompleteDir'] ;
-}
-
-$completeListing = listDir($_SESSION['listCompleteDir'] ?? ""); //completeListing =  "$_SESSION['listCompleteDir']" if it is set else  set to ""
-
-$dirViewHtml = "<div class='complete-directory-listing'>"; 
-
-foreach ($completeListing as $item){
-	$dirViewHtml .= "<span class='unique-directory-listing'>"; 
-	$dirViewHtml .= $item; 
-	$dirViewHtml .= "</span>"; 
-	$dirViewHtml .= "<br>"; 
-}
-
-	$dirViewHtml .= "</div>";
-	echo $dirViewHtml;
-?>
-
-
-
+<a href='/pages/music.php?musicView=true' style="float: right;">See Imported Songs</a>
 <?php 
 
 
-if (isset($_GET['listDirGO'])) {
+if (isset($_GET['musicView'])) {
 
 
-	$_SESSION['listDirGO'] = $_GET['listDirGO'] ;
+	$_SESSION['musicView'] = $_GET['musicView'] ;
 
 	$songsInfo = getSongsInfo('../data/mix24/synced/');
 
-	$html .= "<div class='songs-listing'>";
+	$html .= "<div class='listing songs-listing'>";
 	foreach ($songsInfo as $songInfo){
 		$artist = "";
 		// print_r($songInfo);

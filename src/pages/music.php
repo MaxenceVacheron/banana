@@ -19,6 +19,15 @@
 	<?php require '../view/header.php' ?>
 	
 	<main>
+		<div id='navigator'>
+			<h5 id='navigatorCurrentDir'></h5>
+			<div id='navigatorDirNavigator'>
+
+			</div>
+			<div id='navigatorView'>
+				<?php require '../view/music_navigator.php' ?>
+			</div>
+		</div>
 	</main>
 	<footer>Copyright © Maxence Vacheron <?php echo date("Y"); ?></footer> 
 </body>
