@@ -4,9 +4,10 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    restart: always
+    # restart: always
     volumes:
-      - ./src:/var/www/html
+      - ./:/var/www/html
+      - ./docker/conf/apache2/:/etc/apache2/sites-available/
     networks:
       - banana-api
     ports:
@@ -14,14 +15,14 @@ services:
 
   db:
     image: mariadb:10.5.6-focal
-    restart: always
+    # restart: always
     environment:
       MYSQL_ROOT_PASSWORD: banana
       MYSQL_DATABASE: banana
       MYSQL_USER: banana
       MYSQL_PASSWORD: banana
     volumes:
-        - ./db:/etc/lib/mysql/banana
+        - ./db:/var/lib/mysql/
     expose:
       - "3306"
     ports:
@@ -31,7 +32,7 @@ services:
 
   adminer:
     image: adminer
-    restart: always
+    # restart: always
     ports:
       - 8080:8080
     networks:

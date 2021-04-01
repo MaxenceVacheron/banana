@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Banana: Import Songs!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1>Hello v2 ! ✅</h1>
+    Here is what was found in the <strong>AutomaticallyAddToBanana</strong> folder. <br>
+    Please review the info found in the files before adding them to the database. <br><br><br>
+
+        <form action="/import/v2/doImport" method="POST">
+
+        {% for item in songsInfo %}
+
+                <label for="title">Title:</label>
+                    <input type="text" id="title{{loop.index0}}" name="{{loop.index0}}[title]" value="{{item[2]}}"><br>
+                <label for="artist">Artist:</label>
+                    <input type="text" id="artist{{loop.index0}}" name="{{loop.index0}}[artist]" value="{{item[1]}}"><br>
+                <label for="year">Year:</label>
+                    <input type="number" id="year{{loop.index0}}" name="{{loop.index0}}[year]" value="{{ 'now' | date('Y') }}"><br>
+                <label for="artist">Path:</label>
+                    <input type="text" id="artist{{loop.index0}}" name="{{loop.index0}}[path]" value="{{item[0]}}" readonly><br><br>
+
+        {% endfor %}
+
+                <input type="submit" value="Submit">
+        </form> 
+
+    <br>
+
+    <br>
+    <br>
+    Please do not put a folder in here but only audio files (<i>for now</i>).<br>
+    It is recommended to always have a backup of your files somewhere.<br>
+
+
+
+
+</div>
+{% endblock %}
