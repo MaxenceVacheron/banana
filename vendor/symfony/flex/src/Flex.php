@@ -48,6 +48,7 @@ use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Flex\Event\UpdateEvent;
 use Symfony\Flex\Unpack\Operation;
 use Symfony\Thanks\Thanks;
@@ -126,7 +127,6 @@ class Flex implements PluginInterface, EventSubscriberInterface
             $rfs = Factory::createHttpDownloader($this->io, $this->config);
 
             $this->downloader = $downloader = new Downloader($composer, $io, $rfs);
-            $this->downloader->setFlexId($this->getFlexId());
 
             if ($symfonyRequire) {
                 $this->filter = new PackageFilter($io, $symfonyRequire, $this->downloader);
@@ -138,7 +138,6 @@ class Flex implements PluginInterface, EventSubscriberInterface
             $this->rfs = $rfs = new ParallelDownloader($this->io, $this->config, $rfs->getOptions(), $rfs->isTlsDisabled());
 
             $this->downloader = $downloader = new Downloader($composer, $io, $this->rfs);
-            $this->downloader->setFlexId($this->getFlexId());
 
             $rootPackage = $composer->getPackage();
             $manager = RepositoryFactory::manager($this->io, $this->config, $composer->getEventDispatcher(), $this->rfs);
@@ -277,7 +276,9 @@ class Flex implements PluginInterface, EventSubscriberInterface
             $app->add(new Command\UnpackCommand($resolver));
             $app->add(new Command\RecipesCommand($this, $this->lock, $rfs));
             $app->add(new Command\InstallRecipesCommand($this, $this->options->get('root-dir')));
-            $app->add(new Command\GenerateIdCommand($this));
+            if (class_exists(Command\GenerateIdCommand::class)) {
+                $app->add(new Command\GenerateIdCommand(null));
+            }
             $app->add(new Command\DumpEnvCommand($this->config, $this->options));
 
             break;
@@ -313,7 +314,7 @@ class Flex implements PluginInterface, EventSubscriberInterface
         }
 
         $this->lock->set('php', [
-            'version' => $this->config->get('platform')['php'] ?? (PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION),
+            'version' => $this->config->get('platform')['php'] ?? (\PHP_MAJOR_VERSION.'.'.\PHP_MINOR_VERSION),
         ]);
     }
 
@@ -483,7 +484,9 @@ class Flex implements PluginInterface, EventSubscriberInterface
         $this->io->writeError('');
 
         if (!$recipes) {
-            $this->synchronizePackageJson($rootDir);
+            if (null !== $event && ScriptEvents::POST_UPDATE_CMD === $event->getName()) {
+                $this->synchronizePackageJson($rootDir);
+            }
             $this->lock->write();
 
             if ($this->downloader->isEnabled()) {
@@ -582,16 +585,28 @@ class Flex implements PluginInterface, EventSubscriberInterface
         }
     }
 
-    private function synchronizePackageJson(?string $rootDir)
+    private function synchronizePackageJson(string $rootDir)
     {
-        $synchronizer = new PackageJsonSynchronizer($rootDir);
+        $rootDir = realpath($rootDir);
+        $vendorDir = trim((new Filesystem())->makePathRelative($this->config->get('vendor-dir'), $rootDir), \DIRECTORY_SEPARATOR);
+
+        $synchronizer = new PackageJsonSynchronizer($rootDir, $vendorDir);
 
         if ($synchronizer->shouldSynchronize()) {
-            $packagesNames = array_column($this->composer->getLocker()->getLockData()['packages'] ?? [], 'name');
+            $lockData = $this->composer->getLocker()->getLockData();
 
-            $this->io->writeError('<info>Synchronizing package.json with PHP packages</>');
-            $synchronizer->synchronize($packagesNames);
-            $this->io->writeError('Don\'t forget to run <comment>npm install --force</> or <comment>yarn install --force</> to refresh your JavaScript dependencies!');
+            $r = new \ReflectionParameter([$synchronizer, 'addPackageJsonLink'], 'phpPackage');
+            if ('string' === $r->getType()->getName()) {
+                // support for smooth upgrades from older flex versions
+                $lockData['packages'] = array_column($lockData['packages'] ?? [], 'name');
+                $lockData['packages-dev'] = array_column($lockData['packages-dev'] ?? [], 'name');
+            }
+
+            if ($synchronizer->synchronize(array_merge($lockData['packages'] ?? [], $lockData['packages-dev'] ?? []))) {
+                $this->io->writeError('<info>Synchronizing package.json with PHP packages</>');
+                $this->io->writeError('<warning>Don\'t forget to run npm install --force or yarn install --force to refresh your JavaScript dependencies!</>');
+                $this->io->writeError('');
+            }
         }
     }
 
@@ -708,7 +723,7 @@ class Flex implements PluginInterface, EventSubscriberInterface
                 $fileUrl = current($package->getDistUrls());
             }
 
-            if (!preg_match('/^https?:/', $fileUrl) || !$originUrl = parse_url($fileUrl, PHP_URL_HOST)) {
+            if (!preg_match('/^https?:/', $fileUrl) || !$originUrl = parse_url($fileUrl, \PHP_URL_HOST)) {
                 continue;
             }
 
@@ -741,24 +756,6 @@ class Flex implements PluginInterface, EventSubscriberInterface
         }
     }
 
-    public function generateFlexId()
-    {
-        if ($this->getFlexId()) {
-            return;
-        }
-
-        if (!$this->downloader->isEnabled()) {
-            throw new \LogicException('Cannot generate project id when "symfony/flex" is not found in the root composer.json.');
-        }
-
-        $json = new JsonFile(Factory::getComposerFile());
-        $manipulator = new JsonManipulator(file_get_contents($json->getPath()));
-        $manipulator->addSubNode('extra', 'symfony.id', $this->downloader->get('/ulid')->getBody()['ulid']);
-        file_put_contents($json->getPath(), $manipulator->getContents());
-
-        $this->updateComposerLock();
-    }
-
     public function updateAutoloadFile()
     {
         if (!$platform = $this->lock->get('php')['version'] ?? null) {
@@ -784,8 +781,8 @@ class Flex implements PluginInterface, EventSubscriberInterface
         file_put_contents($autoloadFile, <<<EOPHP
 <?php
 
-if (\PHP_VERSION_ID < $version) {
-    echo sprintf("Fatal Error: composer.lock was created for PHP version $platform or higher but the current PHP version is %d.%d.%d.\\n", PHP_MAJOR_VERSION, PHP_MINOR_VERSION, PHP_RELEASE_VERSION);
+if (PHP_VERSION_ID < $version) {
+    echo sprintf("Fatal Error: composer.lock was created for PHP version $platform or higher but the current PHP version is %d.%d.%s.\\n", PHP_MAJOR_VERSION, PHP_MINOR_VERSION, PHP_RELEASE_VERSION);
     exit(1);
 }
 $code
@@ -904,13 +901,6 @@ EOPHP
         return new Options($options, $this->io);
     }
 
-    private function getFlexId()
-    {
-        $extra = $this->composer->getPackage()->getExtra();
-
-        return $extra['symfony']['id'] ?? null;
-    }
-
     private function formatOrigin(string $origin): string
     {
         // symfony/translation:3.3@github.com/symfony/recipes:branch
@@ -1011,10 +1001,10 @@ EOPHP
 
         if (version_compare('2.0.0', PluginInterface::PLUGIN_API_VERSION, '>')) {
             $events += [
-                InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['populateProvidersCacheDir', PHP_INT_MAX]],
-                InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', PHP_INT_MAX], ['lockPlatform']],
-                PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~PHP_INT_MAX]],
-                PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~PHP_INT_MAX]],
+                InstallerEvents::PRE_DEPENDENCIES_SOLVING => [['populateProvidersCacheDir', \PHP_INT_MAX]],
+                InstallerEvents::POST_DEPENDENCIES_SOLVING => [['populateFilesCacheDir', \PHP_INT_MAX], ['lockPlatform']],
+                PackageEvents::PRE_PACKAGE_INSTALL => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
+                PackageEvents::PRE_PACKAGE_UPDATE => [['populateFilesCacheDir', ~\PHP_INT_MAX]],
                 PluginEvents::PRE_FILE_DOWNLOAD => 'onFileDownload',
             ];
         } else {

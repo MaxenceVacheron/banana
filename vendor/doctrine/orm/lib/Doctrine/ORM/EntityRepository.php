@@ -24,6 +24,7 @@ use BadMethodCallException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
+use Doctrine\Deprecations\Deprecation;
 use Doctrine\Inflector\Inflector;
 use Doctrine\Inflector\InflectorFactory;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -35,9 +36,6 @@ use function lcfirst;
 use function sprintf;
 use function strpos;
 use function substr;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
 
 /**
  * An EntityRepository serves as a repository for entities with generic as well as
@@ -111,17 +109,29 @@ class EntityRepository implements ObjectRepository, Selectable
     /**
      * Creates a new Query instance based on a predefined metadata named query.
      *
+     * @deprecated
+     *
      * @param string $queryName
      *
      * @return Query
      */
     public function createNamedQuery($queryName)
     {
+        Deprecation::trigger(
+            'doctrine/orm',
+            'https://github.com/doctrine/orm/issues/8592',
+            'Named Queries are deprecated, here "%s" on entity %s. Move the query logic into EntityRepository',
+            $queryName,
+            $this->_class->name
+        );
+
         return $this->_em->createQuery($this->_class->getNamedQuery($queryName));
     }
 
     /**
      * Creates a native SQL query.
+     *
+     * @deprecated
      *
      * @param string $queryName
      *
@@ -129,6 +139,14 @@ class EntityRepository implements ObjectRepository, Selectable
      */
     public function createNativeNamedQuery($queryName)
     {
+        Deprecation::trigger(
+            'doctrine/orm',
+            'https://github.com/doctrine/orm/issues/8592',
+            'Named Native Queries are deprecated, here "%s" on entity %s. Move the query logic into EntityRepository',
+            $queryName,
+            $this->_class->name
+        );
+
         $queryMapping = $this->_class->getNamedNativeQuery($queryName);
         $rsm          = new Query\ResultSetMappingBuilder($this->_em);
         $rsm->addNamedNativeQueryMapping($this->_class, $queryMapping);
@@ -145,7 +163,12 @@ class EntityRepository implements ObjectRepository, Selectable
      */
     public function clear()
     {
-        @trigger_error('Method ' . __METHOD__ . '() is deprecated and will be removed in Doctrine ORM 3.0.', E_USER_DEPRECATED);
+        Deprecation::trigger(
+            'doctrine/orm',
+            'https://github.com/doctrine/orm/issues/8460',
+            'Calling %s() is deprecated and will not be supported in Doctrine ORM 3.0.',
+            __METHOD__
+        );
 
         $this->_em->clear($this->_class->rootEntityName);
     }
@@ -160,7 +183,6 @@ class EntityRepository implements ObjectRepository, Selectable
      * @param int|null $lockVersion The lock version.
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
-     *
      * @psalm-return ?T
      */
     public function find($id, $lockMode = null, $lockVersion = null)
@@ -171,9 +193,7 @@ class EntityRepository implements ObjectRepository, Selectable
     /**
      * Finds all entities in the repository.
      *
-     * @return array The entities.
-     *
-     * @psalm-return list<T>
+     * @psalm-return list<T> The entities.
      */
     public function findAll()
     {
@@ -183,14 +203,12 @@ class EntityRepository implements ObjectRepository, Selectable
     /**
      * Finds entities by a set of criteria.
      *
-     * @param array      $criteria
-     * @param array|null $orderBy
-     * @param int|null   $limit
-     * @param int|null   $offset
+     * @param int|null $limit
+     * @param int|null $offset
+     * @psalm-param array<string, mixed> $criteria
+     * @psalm-param array<string, string>|null $orderBy
      *
-     * @return array The objects.
-     *
-     * @psalm-return list<T>
+     * @psalm-return list<T> The objects.
      */
     public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null)
     {
@@ -202,11 +220,10 @@ class EntityRepository implements ObjectRepository, Selectable
     /**
      * Finds a single entity by a set of criteria.
      *
-     * @param array      $criteria
-     * @param array|null $orderBy
+     * @psalm-param array<string, mixed> $criteria
+     * @psalm-param array<string, string>|null $orderBy
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
-     *
      * @psalm-return ?T
      */
     public function findOneBy(array $criteria, ?array $orderBy = null)
@@ -219,7 +236,7 @@ class EntityRepository implements ObjectRepository, Selectable
     /**
      * Counts entities by a set of criteria.
      *
-     * @param array $criteria
+     * @psalm-param array<string, mixed> $criteria
      *
      * @return int The cardinality of the objects that match the given criteria.
      *
@@ -234,7 +251,7 @@ class EntityRepository implements ObjectRepository, Selectable
      * Adds support for magic method calls.
      *
      * @param string $method
-     * @param array  $arguments
+     * @psalm-param list<mixed> $arguments
      *
      * @return mixed The returned value from the resolved method.
      *
@@ -298,8 +315,7 @@ class EntityRepository implements ObjectRepository, Selectable
      * Select all elements from a selectable that match the expression and
      * return a new collection containing these elements.
      *
-     * @return Collection
-     *
+     * @return LazyCriteriaCollection
      * @psalm-return Collection<int, T>
      */
     public function matching(Criteria $criteria)
@@ -312,15 +328,15 @@ class EntityRepository implements ObjectRepository, Selectable
     /**
      * Resolves a magic method call to the proper existent method at `EntityRepository`.
      *
-     * @param string $method    The method to call
-     * @param string $by        The property name used as condition
-     * @param array  $arguments The arguments to pass at method call
+     * @param string $method The method to call
+     * @param string $by     The property name used as condition
+     * @psalm-param list<mixed> $arguments The arguments to pass at method call
      *
      * @return mixed
      *
      * @throws ORMException If the method called is invalid or the requested field/association does not exist.
      */
-    private function resolveMagicCall($method, $by, array $arguments)
+    private function resolveMagicCall(string $method, string $by, array $arguments)
     {
         if (! $arguments) {
             throw ORMException::findByRequiresParameter($method . $by);

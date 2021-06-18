@@ -39,7 +39,7 @@ class IterableResult implements Iterator
     /** @var int */
     private $_key = -1;
 
-    /** @var object|null */
+    /** @var mixed[]|null */
     private $_current = null;
 
     /**
@@ -68,7 +68,7 @@ class IterableResult implements Iterator
     /**
      * Gets the next set of results.
      *
-     * @return array|false
+     * @return mixed[]|false
      */
     public function next()
     {

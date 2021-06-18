@@ -51,12 +51,11 @@ final class ReflectionPropertiesGetter
 
     /**
      * @param string $className
+     * @psalm-param class-string $className
      *
      * @return ReflectionProperty[] indexed by property internal name
-     *
-     * @psalm-param class-string $className
      */
-    public function getProperties($className)
+    public function getProperties($className): array
     {
         if (isset($this->properties[$className])) {
             return $this->properties[$className];
@@ -76,13 +75,12 @@ final class ReflectionPropertiesGetter
     }
 
     /**
-     * @param string $className
+     * @psalm-param class-string $className
      *
      * @return ReflectionClass[]
-     *
-     * @psalm-return list<ReflectionClass>
+     * @psalm-return list<ReflectionClass<object>>
      */
-    private function getHierarchyClasses($className): array
+    private function getHierarchyClasses(string $className): array
     {
         $classes         = [];
         $parentClassName = $className;
@@ -91,7 +89,8 @@ final class ReflectionPropertiesGetter
             $classes[]       = $currentClass;
             $parentClassName = null;
 
-            if ($parentClass = $currentClass->getParentClass()) {
+            $parentClass = $currentClass->getParentClass();
+            if ($parentClass) {
                 $parentClassName = $parentClass->getName();
             }
         }
@@ -103,7 +102,6 @@ final class ReflectionPropertiesGetter
 
     /**
      * @return ReflectionProperty[]
-     *
      * @psalm-return array<string, ReflectionProperty>
      */
     private function getClassProperties(ReflectionClass $reflectionClass): array
@@ -123,18 +121,12 @@ final class ReflectionPropertiesGetter
         );
     }
 
-    /**
-     * @return bool
-     */
-    private function isInstanceProperty(ReflectionProperty $reflectionProperty)
+    private function isInstanceProperty(ReflectionProperty $reflectionProperty): bool
     {
         return ! $reflectionProperty->isStatic();
     }
 
-    /**
-     * @return ReflectionProperty|null
-     */
-    private function getAccessibleProperty(ReflectionProperty $property)
+    private function getAccessibleProperty(ReflectionProperty $property): ?ReflectionProperty
     {
         return $this->reflectionService->getAccessibleProperty(
             $property->getDeclaringClass()->getName(),
@@ -142,10 +134,7 @@ final class ReflectionPropertiesGetter
         );
     }
 
-    /**
-     * @return string
-     */
-    private function getLogicalName(ReflectionProperty $property)
+    private function getLogicalName(ReflectionProperty $property): string
     {
         $propertyName = $property->getName();
 

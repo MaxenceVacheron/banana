@@ -33,6 +33,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Security\Core\Encoder\Argon2iPasswordEncoder;
 use Symfony\Component\Security\Core\Encoder\NativePasswordEncoder;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -159,10 +160,8 @@ final class MakeUser extends AbstractMaker
             true
         );
         $manipulator->setIo($io);
-        $this->userClassBuilder->addUserInterfaceImplementation(
-            $manipulator,
-            $userClassConfiguration
-        );
+
+        $this->userClassBuilder->addUserInterfaceImplementation($manipulator, $userClassConfiguration);
 
         $generator->dumpFile($classPath, $manipulator->getSourceCode());
 
@@ -173,6 +172,7 @@ final class MakeUser extends AbstractMaker
                 $userClassConfiguration->getUserProviderClass(),
                 'security/UserProvider.tpl.php',
                 [
+                    'uses_user_identifier' => class_exists(UserNotFoundException::class),
                     'user_short_name' => $userClassNameDetails->getShortName(),
                 ]
             );

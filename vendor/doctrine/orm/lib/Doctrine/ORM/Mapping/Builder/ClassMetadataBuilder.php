@@ -39,7 +39,7 @@ class ClassMetadataBuilder
     }
 
     /**
-     * @return ClassMetadata
+     * @return ClassMetadataInfo
      */
     public function getClassMetadata()
     {
@@ -137,8 +137,8 @@ class ClassMetadataBuilder
     /**
      * Adds Index.
      *
-     * @param array  $columns
      * @param string $name
+     * @psalm-param list<string> $columns
      *
      * @return static
      */
@@ -156,8 +156,8 @@ class ClassMetadataBuilder
     /**
      * Adds Unique Constraint.
      *
-     * @param array  $columns
      * @param string $name
+     * @psalm-param list<string> $columns
      *
      * @return static
      */
@@ -297,7 +297,7 @@ class ClassMetadataBuilder
      *
      * @param string $name
      * @param string $type
-     * @param array  $mapping
+     * @psalm-param array<string, mixed> $mapping
      *
      * @return static
      */

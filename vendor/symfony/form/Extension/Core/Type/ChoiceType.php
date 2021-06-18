@@ -18,6 +18,7 @@ use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceFieldName;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceFilter;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceLabel;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceLoader;
+use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceTranslationParameters;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceValue;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\GroupBy;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\PreferredChoice;
@@ -56,7 +57,7 @@ class ChoiceType extends AbstractType
      */
     public function __construct(ChoiceListFactoryInterface $choiceListFactory = null, $translator = null)
     {
-        $this->choiceListFactory = $choiceListFactory ?: new CachingFactoryDecorator(
+        $this->choiceListFactory = $choiceListFactory ?? new CachingFactoryDecorator(
             new PropertyAccessDecorator(
                 new DefaultChoiceListFactory()
             )
@@ -186,13 +187,14 @@ class ChoiceType extends AbstractType
         }
 
         if ($options['multiple']) {
-            $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use (&$unknownValues) {
+            $messageTemplate = $options['invalid_message'] ?? 'The value {{ value }} is not valid.';
+
+            $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use (&$unknownValues, $messageTemplate) {
                 // Throw exception if unknown values were submitted
                 if (\count($unknownValues) > 0) {
                     $form = $event->getForm();
 
-                    $clientDataAsString = is_scalar($form->getViewData()) ? (string) $form->getViewData() : \gettype($form->getViewData());
-                    $messageTemplate = 'The value {{ value }} is not valid.';
+                    $clientDataAsString = is_scalar($form->getViewData()) ? (string) $form->getViewData() : (\is_array($form->getViewData()) ? implode('", "', array_keys($unknownValues)) : \gettype($form->getViewData()));
 
                     if (null !== $this->translator) {
                         $message = $this->translator->trans($messageTemplate, ['{{ value }}' => $clientDataAsString], 'validators');
@@ -200,7 +202,7 @@ class ChoiceType extends AbstractType
                         $message = strtr($messageTemplate, ['{{ value }}' => $clientDataAsString]);
                     }
 
-                    $form->addError(new FormError($message, $messageTemplate, ['{{ value }}' => $clientDataAsString], null, new TransformationFailedException(sprintf('The choices "%s" do not exist in the choice list.', implode('", "', array_keys($unknownValues))))));
+                    $form->addError(new FormError($message, $messageTemplate, ['{{ value }}' => $clientDataAsString], null, new TransformationFailedException(sprintf('The choices "%s" do not exist in the choice list.', $clientDataAsString))));
                 }
             });
 
@@ -260,6 +262,7 @@ class ChoiceType extends AbstractType
             'separator' => '-------------------',
             'placeholder' => null,
             'choice_translation_domain' => $choiceTranslationDomain,
+            'choice_translation_parameters' => $options['choice_translation_parameters'],
         ]);
 
         // The decision, whether a choice is selected, is potentially done
@@ -374,6 +377,7 @@ class ChoiceType extends AbstractType
             'choice_name' => null,
             'choice_value' => null,
             'choice_attr' => null,
+            'choice_translation_parameters' => [],
             'preferred_choices' => [],
             'group_by' => null,
             'empty_data' => $emptyData,
@@ -404,6 +408,7 @@ class ChoiceType extends AbstractType
         $resolver->setAllowedTypes('choice_name', ['null', 'callable', 'string', PropertyPath::class, ChoiceFieldName::class]);
         $resolver->setAllowedTypes('choice_value', ['null', 'callable', 'string', PropertyPath::class, ChoiceValue::class]);
         $resolver->setAllowedTypes('choice_attr', ['null', 'array', 'callable', 'string', PropertyPath::class, ChoiceAttr::class]);
+        $resolver->setAllowedTypes('choice_translation_parameters', ['null', 'array', 'callable', ChoiceTranslationParameters::class]);
         $resolver->setAllowedTypes('preferred_choices', ['array', \Traversable::class, 'callable', 'string', PropertyPath::class, PreferredChoice::class]);
         $resolver->setAllowedTypes('group_by', ['null', 'callable', 'string', PropertyPath::class, GroupBy::class]);
     }
@@ -444,6 +449,7 @@ class ChoiceType extends AbstractType
             'label' => $choiceView->label,
             'label_html' => $options['label_html'],
             'attr' => $choiceView->attr,
+            'label_translation_parameters' => $choiceView->labelTranslationParameters,
             'translation_domain' => $options['choice_translation_domain'],
             'block_name' => 'entry',
         ];
@@ -488,7 +494,8 @@ class ChoiceType extends AbstractType
             $options['choice_label'],
             $options['choice_name'],
             $options['group_by'],
-            $options['choice_attr']
+            $options['choice_attr'],
+            $options['choice_translation_parameters']
         );
     }
 }

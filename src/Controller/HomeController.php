@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Artist;
 use App\Entity\Mood;
 use App\Entity\Song;
 use App\Functions\File;
@@ -40,8 +41,14 @@ class HomeController extends AbstractController
 		$artistsArray = [];
 		$yearsArray = [];
 		foreach ($songs as $song) {
-			$artistsArray[] = $song->getArtist();
 			$yearsArray[] = $song->getYear();
+		}
+
+		$artistRepo = $this->em->getRepository(Artist::class);
+		$artists = $artistRepo->findAll();
+		$artistsArray = [];
+		foreach ($artists as $artist) {
+			$artistsArray[] = $artist->getName();
 		}
 
 

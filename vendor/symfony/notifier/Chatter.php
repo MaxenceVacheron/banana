@@ -22,8 +22,6 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Fabien Potencier <fabien@symfony.com>
- *
- * @experimental in 5.2
  */
 final class Chatter implements ChatterInterface
 {
@@ -51,9 +49,7 @@ final class Chatter implements ChatterInterface
     public function send(MessageInterface $message): ?SentMessage
     {
         if (null === $this->bus) {
-            $this->transport->send($message);
-
-            return null;
+            return $this->transport->send($message);
         }
 
         if (null !== $this->dispatcher) {

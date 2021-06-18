@@ -53,8 +53,8 @@ abstract class AbstractBrowser
     public function __construct(array $server = [], History $history = null, CookieJar $cookieJar = null)
     {
         $this->setServerParameters($server);
-        $this->history = $history ?: new History();
-        $this->cookieJar = $cookieJar ?: new CookieJar();
+        $this->history = $history ?? new History();
+        $this->cookieJar = $cookieJar ?? new CookieJar();
     }
 
     /**
@@ -158,6 +158,24 @@ abstract class AbstractBrowser
             return $this->request($method, $uri, $parameters, $files, $server, $content, $changeHistory);
         } finally {
             unset($this->server['HTTP_X_REQUESTED_WITH']);
+        }
+    }
+
+    /**
+     * Converts the request parameters into a JSON string and uses it as request content.
+     */
+    public function jsonRequest(string $method, string $uri, array $parameters = [], array $server = [], bool $changeHistory = true): Crawler
+    {
+        $content = json_encode($parameters);
+
+        $this->setServerParameter('CONTENT_TYPE', 'application/json');
+        $this->setServerParameter('HTTP_ACCEPT', 'application/json');
+
+        try {
+            return $this->request($method, $uri, [], [], $server, $content, $changeHistory);
+        } finally {
+            unset($this->server['CONTENT_TYPE']);
+            unset($this->server['HTTP_ACCEPT']);
         }
     }
 

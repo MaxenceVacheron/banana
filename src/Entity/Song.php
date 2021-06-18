@@ -12,9 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Song
 {
-
-
-
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -28,9 +25,19 @@ class Song
     private $title;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="songs")
      */
     private $artist;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Mood::class, inversedBy="songs")
+     */
+    private $moods;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Album::class, inversedBy="songs")
+     */
+    private $albums;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -42,25 +49,12 @@ class Song
      */
     private $path;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Mood::class, inversedBy="songs")
-     */
-    private $mood;
-
     public function __construct()
     {
-        $this->mood = new ArrayCollection();
+        $this->artist = new ArrayCollection();
+        $this->moods = new ArrayCollection();
+        $this->albums = new ArrayCollection();
     }
-
-
-    // public function __toString()
-    // {
-    //     return $this->getTitle();
-    //     // return $this->artist;
-    //     // return $this->year;
-    //     // return $this->path;
-    // }
-
 
     public function getId(): ?int
     {
@@ -79,14 +73,74 @@ class Song
         return $this;
     }
 
-    public function getArtist(): ?string
+    /**
+     * @return Collection|Artist[]
+     */
+    public function getArtist(): Collection
     {
         return $this->artist;
     }
 
-    public function setArtist(string $artist): self
+    public function addArtist(Artist $artist): self
     {
-        $this->artist = $artist;
+        if (!$this->artist->contains($artist)) {
+            $this->artist[] = $artist;
+        }
+
+        return $this;
+    }
+
+    public function removeArtist(Artist $artist): self
+    {
+        $this->artist->removeElement($artist);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Mood[]
+     */
+    public function getMoods(): Collection
+    {
+        return $this->moods;
+    }
+
+    public function addMood(Mood $mood): self
+    {
+        if (!$this->moods->contains($mood)) {
+            $this->moods[] = $mood;
+        }
+
+        return $this;
+    }
+
+    public function removeMood(Mood $mood): self
+    {
+        $this->moods->removeElement($mood);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Album[]
+     */
+    public function getAlbums(): Collection
+    {
+        return $this->albums;
+    }
+
+    public function addAlbum(Album $album): self
+    {
+        if (!$this->albums->contains($album)) {
+            $this->albums[] = $album;
+        }
+
+        return $this;
+    }
+
+    public function removeAlbum(Album $album): self
+    {
+        $this->albums->removeElement($album);
 
         return $this;
     }
@@ -115,27 +169,4 @@ class Song
         return $this;
     }
 
-    /**
-     * @return Collection|Mood[]
-     */
-    public function getMood(): Collection
-    {
-        return $this->mood;
-    }
-
-    public function addMood(Mood $mood): self
-    {
-        if (!$this->mood->contains($mood)) {
-            $this->mood[] = $mood;
-        }
-
-        return $this;
-    }
-
-    public function removeMood(Mood $mood): self
-    {
-        $this->mood->removeElement($mood);
-
-        return $this;
-    }
 }

@@ -154,6 +154,8 @@ $catalogue = new MessageCatalogue('hu', array (
     'Account is locked.' => 'Zárolt fiók.',
     'Too many failed login attempts, please try again later.' => 'Túl sok sikertelen bejelentkezési kísérlet, kérjük próbálja újra később.',
     'Invalid or expired login link.' => 'Érvénytelen vagy lejárt bejelentkezési link.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Túl sok sikertelen bejelentkezési kísérlet, kérjük próbálja újra %minutes% perc múlva.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Túl sok sikertelen bejelentkezési kísérlet, kérjük próbálja újra %minutes% perc múlva.',
   ),
 ));
 
@@ -309,6 +311,8 @@ $catalogueEn = new MessageCatalogue('en', array (
     'Account is locked.' => 'Account is locked.',
     'Too many failed login attempts, please try again later.' => 'Too many failed login attempts, please try again later.',
     'Invalid or expired login link.' => 'Invalid or expired login link.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Too many failed login attempts, please try again in %minutes% minute.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Too many failed login attempts, please try again in %minutes% minutes.',
   ),
 ));
 $catalogue->addFallbackCatalogue($catalogueEn);

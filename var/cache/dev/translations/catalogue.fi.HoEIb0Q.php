@@ -154,6 +154,8 @@ $catalogue = new MessageCatalogue('fi', array (
     'Account is locked.' => 'Tili on lukittu.',
     'Too many failed login attempts, please try again later.' => 'Liian monta epäonnistunutta kirjautumisyritystä, yritä myöhemmin uudelleen.',
     'Invalid or expired login link.' => 'Virheellinen tai vanhentunut kirjautumislinkki.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Liian monta epäonnistunutta kirjautumisyritystä, yritä uudelleen %minutes% minuutin kuluttua.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Liian monta epäonnistunutta kirjautumisyritystä, yritä uudelleen %minutes% minuutin kuluttua.',
   ),
 ));
 
@@ -309,6 +311,8 @@ $catalogueEn = new MessageCatalogue('en', array (
     'Account is locked.' => 'Account is locked.',
     'Too many failed login attempts, please try again later.' => 'Too many failed login attempts, please try again later.',
     'Invalid or expired login link.' => 'Invalid or expired login link.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Too many failed login attempts, please try again in %minutes% minute.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Too many failed login attempts, please try again in %minutes% minutes.',
   ),
 ));
 $catalogue->addFallbackCatalogue($catalogueEn);

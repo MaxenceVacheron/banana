@@ -25,9 +25,9 @@ use Symfony\Component\ErrorHandler\DebugClassLoader;
  */
 class DeprecationErrorHandler
 {
-    const MODE_DISABLED = 'disabled';
-    const MODE_WEAK = 'max[total]=999999&verbose=0';
-    const MODE_STRICT = 'max[total]=0';
+    public const MODE_DISABLED = 'disabled';
+    public const MODE_WEAK = 'max[total]=999999&verbose=0';
+    public const MODE_STRICT = 'max[total]=0';
 
     private $mode;
     private $configuration;
@@ -242,13 +242,7 @@ class DeprecationErrorHandler
             return $this->configuration;
         }
         if (false === $mode = $this->mode) {
-            if (isset($_SERVER['SYMFONY_DEPRECATIONS_HELPER'])) {
-                $mode = $_SERVER['SYMFONY_DEPRECATIONS_HELPER'];
-            } elseif (isset($_ENV['SYMFONY_DEPRECATIONS_HELPER'])) {
-                $mode = $_ENV['SYMFONY_DEPRECATIONS_HELPER'];
-            } else {
-                $mode = getenv('SYMFONY_DEPRECATIONS_HELPER');
-            }
+            $mode = $_SERVER['SYMFONY_DEPRECATIONS_HELPER'] ?? $_ENV['SYMFONY_DEPRECATIONS_HELPER'] ?? getenv('SYMFONY_DEPRECATIONS_HELPER');
         }
         if ('strict' === $mode) {
             return $this->configuration = Configuration::inStrictMode();
@@ -295,6 +289,8 @@ class DeprecationErrorHandler
      * @param string[]      $groups
      * @param Configuration $configuration
      * @param bool          $isFailing
+     *
+     * @throws \InvalidArgumentException
      */
     private function displayDeprecations($groups, $configuration, $isFailing)
     {
@@ -302,16 +298,26 @@ class DeprecationErrorHandler
             return $b->count() - $a->count();
         };
 
+        if ($configuration->shouldWriteToLogFile()) {
+            if (false === $handle = @fopen($file = $configuration->getLogFile(), 'a')) {
+                throw new \InvalidArgumentException(sprintf('The configured log file "%s" is not writeable.', $file));
+            }
+        } else {
+            $handle = fopen('php://output', 'w');
+        }
+
         foreach ($groups as $group) {
             if ($this->deprecationGroups[$group]->count()) {
-                echo "\n", self::colorize(
-                    sprintf(
-                        '%s deprecation notices (%d)',
-                        \in_array($group, ['direct', 'indirect', 'self'], true) ? "Remaining $group" : ucfirst($group),
-                        $this->deprecationGroups[$group]->count()
-                    ),
-                    'legacy' !== $group && 'indirect' !== $group
-                ), "\n";
+                $deprecationGroupMessage = sprintf(
+                    '%s deprecation notices (%d)',
+                    \in_array($group, ['direct', 'indirect', 'self'], true) ? "Remaining $group" : ucfirst($group),
+                    $this->deprecationGroups[$group]->count()
+                );
+                if ($configuration->shouldWriteToLogFile()) {
+                    fwrite($handle, "\n$deprecationGroupMessage\n");
+                } else {
+                    fwrite($handle, "\n".self::colorize($deprecationGroupMessage, 'legacy' !== $group && 'indirect' !== $group)."\n");
+                }
 
                 if ('legacy' !== $group && !$configuration->verboseOutput($group) && !$isFailing) {
                     continue;
@@ -320,14 +326,14 @@ class DeprecationErrorHandler
                 uasort($notices, $cmp);
 
                 foreach ($notices as $msg => $notice) {
-                    echo "\n  ", $notice->count(), 'x: ', $msg, "\n";
+                    fwrite($handle, sprintf("\n  %sx: %s\n", $notice->count(), $msg));
 
                     $countsByCaller = $notice->getCountsByCaller();
                     arsort($countsByCaller);
 
                     foreach ($countsByCaller as $method => $count) {
                         if ('count' !== $method) {
-                            echo '    ', $count, 'x in ', preg_replace('/(.*)\\\\(.*?::.*?)$/', '$2 from $1', $method), "\n";
+                            fwrite($handle, sprintf("    %dx in %s\n", $count, preg_replace('/(.*)\\\\(.*?::.*?)$/', '$2 from $1', $method)));
                         }
                     }
                 }
@@ -335,7 +341,7 @@ class DeprecationErrorHandler
         }
 
         if (!empty($notices)) {
-            echo "\n";
+            fwrite($handle, "\n");
         }
     }
 

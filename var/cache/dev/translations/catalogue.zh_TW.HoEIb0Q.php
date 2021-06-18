@@ -154,6 +154,8 @@ $catalogue = new MessageCatalogue('zh_TW', array (
     'Account is locked.' => '賬號已被鎖定。',
     'Too many failed login attempts, please try again later.' => '登入失敗的次數過多，請稍後再試。',
     'Invalid or expired login link.' => '失效或過期的登入鏈接。',
+    'Too many failed login attempts, please try again in %minutes% minute.' => '登錄失敗的次數過多，請在%minutes%分鐘後再試。',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => '登錄失敗的次數過多，請在%minutes%分鐘後再試。',
   ),
 ));
 
@@ -312,6 +314,8 @@ $catalogueEn = new MessageCatalogue('en', array (
     'Account is locked.' => 'Account is locked.',
     'Too many failed login attempts, please try again later.' => 'Too many failed login attempts, please try again later.',
     'Invalid or expired login link.' => 'Invalid or expired login link.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Too many failed login attempts, please try again in %minutes% minute.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Too many failed login attempts, please try again in %minutes% minutes.',
   ),
 ));
 $catalogueZh->addFallbackCatalogue($catalogueEn);

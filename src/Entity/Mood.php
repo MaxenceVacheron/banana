@@ -25,12 +25,7 @@ class Mood
     private $name;
 
     /**
-     * @ORM\Column(type="datetime")
-     */
-    private $createdAt;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=Song::class, mappedBy="mood")
+     * @ORM\ManyToMany(targetEntity=Song::class, mappedBy="moods")
      */
     private $songs;
 
@@ -52,18 +47,6 @@ class Mood
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
 
         return $this;
     }

@@ -84,10 +84,10 @@ class ResultSetMappingBuilder extends ResultSetMapping
     /**
      * Adds a root entity and all of its fields to the result set.
      *
-     * @param string   $class          The class name of the root entity.
-     * @param string   $alias          The unique alias to use for the root entity.
-     * @param array    $renamedColumns Columns that have been renamed (tableColumnName => queryColumnName).
-     * @param int|null $renameMode     One of the COLUMN_RENAMING_* constants or array for BC reasons (CUSTOM).
+     * @param string   $class      The class name of the root entity.
+     * @param string   $alias      The unique alias to use for the root entity.
+     * @param int|null $renameMode One of the COLUMN_RENAMING_* constants or array for BC reasons (CUSTOM).
+     * @psalm-param array<string, string> $renamedColumns Columns that have been renamed (tableColumnName => queryColumnName).
      *
      * @return void
      */
@@ -103,13 +103,13 @@ class ResultSetMappingBuilder extends ResultSetMapping
     /**
      * Adds a joined entity and all of its fields to the result set.
      *
-     * @param string   $class          The class name of the joined entity.
-     * @param string   $alias          The unique alias to use for the joined entity.
-     * @param string   $parentAlias    The alias of the entity result that is the parent of this joined result.
-     * @param string   $relation       The association field that connects the parent entity result
-     *                                 with the joined entity result.
-     * @param array    $renamedColumns Columns that have been renamed (tableColumnName => queryColumnName).
-     * @param int|null $renameMode     One of the COLUMN_RENAMING_* constants or array for BC reasons (CUSTOM).
+     * @param string   $class       The class name of the joined entity.
+     * @param string   $alias       The unique alias to use for the joined entity.
+     * @param string   $parentAlias The alias of the entity result that is the parent of this joined result.
+     * @param string   $relation    The association field that connects the parent entity result
+     *                              with the joined entity result.
+     * @param int|null $renameMode  One of the COLUMN_RENAMING_* constants or array for BC reasons (CUSTOM).
+     * @psalm-param array<string, string> $renamedColumns Columns that have been renamed (tableColumnName => queryColumnName).
      *
      * @return void
      */
@@ -127,7 +127,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
      *
      * @param string $class
      * @param string $alias
-     * @param array  $columnAliasMap
+     * @psalm-param array<string, string> $columnAliasMap
      *
      * @return void
      *
@@ -179,7 +179,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
         }
     }
 
-    private function isInheritanceSupported(ClassMetadataInfo $classMetadata)
+    private function isInheritanceSupported(ClassMetadataInfo $classMetadata): bool
     {
         if (
             $classMetadata->isInheritanceTypeSingleTable()
@@ -194,13 +194,9 @@ class ResultSetMappingBuilder extends ResultSetMapping
     /**
      * Gets column alias for a given column.
      *
-     * @param string $columnName
-     * @param int    $mode
-     * @param array  $customRenameColumns
-     *
-     * @return string
+     * @psalm-param array<string, string>  $customRenameColumns
      */
-    private function getColumnAlias($columnName, $mode, array $customRenameColumns)
+    private function getColumnAlias(string $columnName, int $mode, array $customRenameColumns): string
     {
         switch ($mode) {
             case self::COLUMN_RENAMING_INCREMENT:
@@ -211,6 +207,12 @@ class ResultSetMappingBuilder extends ResultSetMapping
 
             case self::COLUMN_RENAMING_NONE:
                 return $columnName;
+
+            default:
+                throw new InvalidArgumentException(sprintf(
+                    '%d is not a valid value for $mode',
+                    $mode
+                ));
         }
     }
 
@@ -219,16 +221,18 @@ class ResultSetMappingBuilder extends ResultSetMapping
      *
      * This depends on the renaming mode selected by the user.
      *
-     * @param string $className
-     * @param int    $mode
-     * @param array  $customRenameColumns
+     * @psalm-param class-string $className
+     * @psalm-param self::COLUMN_RENAMING_* $mode
+     * @psalm-param array<string, string> $customRenameColumns
      *
      * @return string[]
-     *
      * @psalm-return array<array-key, string>
      */
-    private function getColumnAliasMap($className, $mode, array $customRenameColumns)
-    {
+    private function getColumnAliasMap(
+        string $className,
+        int $mode,
+        array $customRenameColumns
+    ): array {
         if ($customRenameColumns) { // for BC with 2.2-2.3 API
             $mode = self::COLUMN_RENAMING_CUSTOM;
         }
@@ -273,7 +277,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
      *
      * @param string $resultClassName
      *
-     * @return self
+     * @return static
      */
     public function addNamedNativeQueryResultClassMapping(ClassMetadataInfo $class, $resultClassName)
     {
@@ -317,7 +321,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
      *
      * @param string $resultSetMappingName
      *
-     * @return self
+     * @return static
      */
     public function addNamedNativeQueryResultSetMapping(ClassMetadataInfo $class, $resultSetMappingName)
     {
@@ -366,7 +370,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
      * @param mixed[] $entityMapping
      * @param string  $alias
      *
-     * @return self
+     * @return static
      *
      * @throws MappingException
      * @throws InvalidArgumentException
@@ -426,7 +430,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
      * Works only for all the entity results. The select parts for scalar
      * expressions have to be written manually.
      *
-     * @param array $tableAliases
+     * @psalm-param array<string, string> $tableAliases
      *
      * @return string
      */

@@ -42,7 +42,7 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
 
         $this->fields = $fields;
         $this->pad = $pad;
-        $this->referenceDate = $referenceDate ?: new \DateTimeImmutable('1970-01-01 00:00:00');
+        $this->referenceDate = $referenceDate ?? new \DateTimeImmutable('1970-01-01 00:00:00');
     }
 
     /**
@@ -170,9 +170,9 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
                 empty($value['year']) ? $this->referenceDate->format('Y') : $value['year'],
                 empty($value['month']) ? $this->referenceDate->format('m') : $value['month'],
                 empty($value['day']) ? $this->referenceDate->format('d') : $value['day'],
-                empty($value['hour']) ? $this->referenceDate->format('H') : $value['hour'],
-                empty($value['minute']) ? $this->referenceDate->format('i') : $value['minute'],
-                empty($value['second']) ? $this->referenceDate->format('s') : $value['second']
+                $value['hour'] ?? $this->referenceDate->format('H'),
+                $value['minute'] ?? $this->referenceDate->format('i'),
+                $value['second'] ?? $this->referenceDate->format('s')
                 ),
                 new \DateTimeZone($this->outputTimezone)
             );

@@ -154,6 +154,8 @@ $catalogue = new MessageCatalogue('tr', array (
     'Account is locked.' => 'Hesap kilitlenmiş.',
     'Too many failed login attempts, please try again later.' => 'Çok fazla başarısız giriş denemesi, lütfen daha sonra tekrar deneyin.',
     'Invalid or expired login link.' => 'Geçersiz veya süresi dolmuş oturum açma bağlantısı.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Çok fazla başarısız giriş denemesi, lütfen %minutes% dakika sonra tekrar deneyin.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Çok fazla başarısız giriş denemesi, lütfen %minutes% dakika sonra tekrar deneyin.',
   ),
 ));
 
@@ -309,6 +311,8 @@ $catalogueEn = new MessageCatalogue('en', array (
     'Account is locked.' => 'Account is locked.',
     'Too many failed login attempts, please try again later.' => 'Too many failed login attempts, please try again later.',
     'Invalid or expired login link.' => 'Invalid or expired login link.',
+    'Too many failed login attempts, please try again in %minutes% minute.' => 'Too many failed login attempts, please try again in %minutes% minute.',
+    'Too many failed login attempts, please try again in %minutes% minutes.' => 'Too many failed login attempts, please try again in %minutes% minutes.',
   ),
 ));
 $catalogue->addFallbackCatalogue($catalogueEn);

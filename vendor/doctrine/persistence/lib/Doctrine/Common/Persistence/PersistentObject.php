@@ -51,7 +51,10 @@ abstract class PersistentObject implements ObjectManagerAware
     /** @var ObjectManager|null */
     private static $objectManager = null;
 
-    /** @var ClassMetadata|null */
+    /**
+     * @var ClassMetadata<object>|null
+     * @psalm-var ClassMetadata<object>|null
+     */
     private $cm = null;
 
     /**
@@ -138,9 +141,10 @@ abstract class PersistentObject implements ObjectManagerAware
     /**
      * If this is an inverse side association, completes the owning side.
      *
-     * @param string        $field
-     * @param ClassMetadata $targetClass
-     * @param object        $targetObject
+     * @param string $field
+     * @param string $targetClass
+     * @param object $targetObject
+     * @psalm-param class-string $targetClass
      *
      * @return void
      */

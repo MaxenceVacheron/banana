@@ -45,10 +45,10 @@ abstract class Base
     /** @var string */
     protected $postSeparator = ')';
 
-    /** @var string[] */
+    /** @psalm-var list<class-string> */
     protected $allowedClasses = [];
 
-    /** @var mixed[] */
+    /** @psalm-var list<string|object> */
     protected $parts = [];
 
     /**
@@ -60,7 +60,7 @@ abstract class Base
     }
 
     /**
-     * @param array $args
+     * @psalm-param list<string|object> $args
      *
      * @return static
      */
@@ -103,6 +103,7 @@ abstract class Base
 
     /**
      * @return int
+     * @psalm-return 0|positive-int
      */
     public function count()
     {
