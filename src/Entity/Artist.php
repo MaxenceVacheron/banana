@@ -34,10 +34,16 @@ class Artist
      */
     private $name;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=Song::class, mappedBy="collab")
+     */
+    private $collab_songs;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
         $this->albums = new ArrayCollection();
+        $this->collab_songs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -107,6 +113,33 @@ class Artist
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Song[]
+     */
+    public function getCollabSongs(): Collection
+    {
+        return $this->collab_songs;
+    }
+
+    public function addCollabSong(Song $collabSong): self
+    {
+        if (!$this->collab_songs->contains($collabSong)) {
+            $this->collab_songs[] = $collabSong;
+            $collabSong->addCollab($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollabSong(Song $collabSong): self
+    {
+        if ($this->collab_songs->removeElement($collabSong)) {
+            $collabSong->removeCollab($this);
+        }
 
         return $this;
     }

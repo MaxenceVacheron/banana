@@ -49,11 +49,17 @@ class Song
      */
     private $path;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="collab_songs")
+     */
+    private $collab;
+
     public function __construct()
     {
         $this->artist = new ArrayCollection();
         $this->moods = new ArrayCollection();
         $this->albums = new ArrayCollection();
+        $this->collab = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -165,6 +171,30 @@ class Song
     public function setPath(string $path): self
     {
         $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Artist[]
+     */
+    public function getCollab(): Collection
+    {
+        return $this->collab;
+    }
+
+    public function addCollab(Artist $collab): self
+    {
+        if (!$this->collab->contains($collab)) {
+            $this->collab[] = $collab;
+        }
+
+        return $this;
+    }
+
+    public function removeCollab(Artist $collab): self
+    {
+        $this->collab->removeElement($collab);
 
         return $this;
     }
