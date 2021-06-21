@@ -51,6 +51,7 @@ class Song
 
     /**
      * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="collab_songs")
+     * @ORM\JoinTable(name="songs_collab_artists")
      */
     private $collab;
 
