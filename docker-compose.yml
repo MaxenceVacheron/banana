@@ -22,7 +22,7 @@ services:
       MYSQL_USER: banana
       MYSQL_PASSWORD: banana
     volumes:
-        - ./db:/var/lib/mysql/
+        - persistent:/var/lib/mysql
     expose:
       - "3306"
     ports:
@@ -41,5 +41,8 @@ services:
 networks:
   banana-api:
     driver: "bridge"
+
+volumes:
+  persistent:
 
 

@@ -49,11 +49,12 @@ class Song
      */
     private $path;
 
+
+
     /**
-     * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="collab_songs")
-     * @ORM\JoinTable(name="songs_collab_artists")
+     * @ORM\OneToMany(targetEntity=SongHasArtist::class, mappedBy="song")
      */
-    private $collab;
+    private $songHasArtists;
 
     public function __construct()
     {
@@ -61,6 +62,7 @@ class Song
         $this->moods = new ArrayCollection();
         $this->albums = new ArrayCollection();
         $this->collab = new ArrayCollection();
+        $this->songHasArtists = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -175,27 +177,32 @@ class Song
 
         return $this;
     }
-
     /**
-     * @return Collection|Artist[]
+     * @return Collection|SongHasArtist[]
      */
-    public function getCollab(): Collection
+    public function getSongHasArtists(): Collection
     {
-        return $this->collab;
+        return $this->songHasArtists;
     }
 
-    public function addCollab(Artist $collab): self
+    public function addSongHasArtist(SongHasArtist $songHasArtist): self
     {
-        if (!$this->collab->contains($collab)) {
-            $this->collab[] = $collab;
+        if (!$this->songHasArtists->contains($songHasArtist)) {
+            $this->songHasArtists[] = $songHasArtist;
+            $songHasArtist->setSong($this);
         }
 
         return $this;
     }
 
-    public function removeCollab(Artist $collab): self
+    public function removeSongHasArtist(SongHasArtist $songHasArtist): self
     {
-        $this->collab->removeElement($collab);
+        if ($this->songHasArtists->removeElement($songHasArtist)) {
+            // set the owning side to null (unless already changed)
+            if ($songHasArtist->getSong() === $this) {
+                $songHasArtist->setSong(null);
+            }
+        }
 
         return $this;
     }

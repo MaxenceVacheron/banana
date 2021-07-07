@@ -41,8 +41,6 @@ class PlayerController extends AbstractController
 		$albumsArray = [];
 		$moodsArray = [];
 
-		urlencode('vriw');
-
 		$moodRepo = $this->em->getRepository(Mood::class);
 		$moods = $moodRepo->findAll();
 		foreach ($moods as $mood) {
@@ -61,20 +59,15 @@ class PlayerController extends AbstractController
 			$albumsArray[] = $album->getName();
 		}
 
-
 		$songRepo = $this->em->getRepository(Song::class);
 		$songs = $songRepo->findAll();
 
-		
+
 		foreach ($songs as $song) {
 			if (!in_array($song->getYear(), $yearsArray)) {
 				$yearsArray[] = $song->getYear();
 			}
 		}
-
-		// dd($albumsArray);
-
-
 
 		return $this->render('player/index.html.twig', [
 			'controller_name' => 'PlayerController',
@@ -112,17 +105,20 @@ class PlayerController extends AbstractController
 			foreach ($askedMoods as $askedMood) {
 				$_askedMood = $moodRepo->findOneBy(['name' => $askedMood]);
 				$songsLinkedtoMood = $_askedMood->getSongs()->getValues();
-				// dd($songsLinkedtoMood);
+
 				foreach ($songsLinkedtoMood as $songLinkedtoMood) {
 
-					// dd($songLinkedtoMood->getArtist()->getValues());
-					// dd($songLinkedtoMood->getArtist()->getValues()[0]->getName()); // "Alpha Wann"
+					$artistsArray = [];
+					$songHasArt = $songLinkedtoMood->getSongHasArtists();
+					foreach ($songHasArt as $sameSongDifArtist) {
+						$artistType = $sameSongDifArtist->getArtistType()->getName();
+						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
+					}
 
-					$mltplArtists = $songLinkedtoMood->getArtist()->getValues();
-					$artistNames = [];
-
-					foreach ($mltplArtists as $unqArtist){
-						$artistNames[] = $unqArtist->getName();
+					$mltplMoods = $songLinkedtoMood->getMoods()->getValues();
+					$moodNames = [];
+					foreach ($mltplMoods as $unqMood) {
+						$moodNames[] = $unqMood->getName();
 					}
 
 					$songsQueue[] =
@@ -130,68 +126,128 @@ class PlayerController extends AbstractController
 							'path' => substr($songLinkedtoMood->getPath(), 20),
 							// 'path' => $songLinkedtoMood->getPath(),
 							'title' => $songLinkedtoMood->getTitle(),
-							'artists' => $artistNames,
+							'artists' => $artistsArray,
+							'moods' => $moodNames,
 							'album' => $songLinkedtoMood->getAlbums(),
 						];
 				}
 			}
-			// dd($songsQueue);
 		}
 
 		if ($askedArtists) {
 			foreach ($askedArtists as $askedArtist) {
+
 				$_askedArtist = $artistRepo->findOneBy(['name' => $askedArtist]);
-				// dd($askedArtist);
-				$songsLinkedtoArtist = $_askedArtist->getSongs()->getValues();
-				// dd($songsLinkedtoArtist);
-				foreach ($songsLinkedtoArtist as $songLinkedtoArtist) {
+				$songsHasLinkedtoArtist = $_askedArtist->getSongHasArtists()->getValues(); //ALL SONGSHASARTIST
 
-					// dd($songLinkedtoMood->getArtist()->getValues());
-					// dd($songLinkedtoMood->getArtist()->getValues()[0]->getName()); // "Alpha Wann"
+				// dd($songsHasLinkedtoArtist);
 
-					$mltplArtists = $songLinkedtoArtist->getArtist()->getValues();
-					$artistNames = [];
 
-					foreach ($mltplArtists as $unqArtist){
-						$artistNames[] = $unqArtist->getName();
+
+				foreach ($songsHasLinkedtoArtist as $songLinkedToArtist_) {
+
+
+					$songLinkedToArtist = $songLinkedToArtist_->getSong();
+
+
+
+					// $artistsArray = [];
+					// $songHasArt = $song->getSongHasArtists();
+					// foreach ($songHasArt as $sameSongDifArtist) {
+					// 	$artistType = $sameSongDifArtist->getArtistType()->getName();
+					// 	$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
+					// }
+
+					$artistsArray = [];
+					$songHasArt = $songLinkedToArtist->getSongHasArtists(); 
+					foreach ($songHasArt as $sameSongDifArtist) {
+						$artistType = $sameSongDifArtist->getArtistType()->getName();
+						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
 					}
+
+					$moodNames = [];
+					$mltplMoods = $songLinkedToArtist->getMoods()->getValues();
+					foreach ($mltplMoods as $unqMood) {
+						$moodNames[] = $unqMood->getName();
+					}
+
+					$albumsArray = []; //ALL ALBUMS THE SONG IS IN
+					$_albumsArray = $songLinkedToArtist->getAlbums()->getValues(); // OTHER ALBUMS THE SONG IS FEATURED IN
+
+					foreach ($_albumsArray as $unqAlbum) {
+						$albumsArrayUnqName = $unqAlbum->getName();
+						$albumsArrayYear = $unqAlbum->getYear();
+
+						$unqAlbumArtists = [];
+						$albumsArrayArtists = $unqAlbum->getArtists()->getValues();
+						foreach ($albumsArrayArtists as $unqAlbumArtist) {
+							$unqAlbumArtists[] = $unqAlbumArtist->getName();
+						}
+
+						$albumsArray[$albumsArrayUnqName]['year'] = $albumsArrayYear;
+						$albumsArray[$albumsArrayUnqName]['artists'] = $unqAlbumArtists;
+					}
+
 
 					$songsQueue[] =
 						[
-							'path' => substr($songLinkedtoArtist->getPath(), 20),
-							// 'path' => $songLinkedtoMood->getPath(),
-							'title' => $songLinkedtoArtist->getTitle(),
-							'artists' => $artistNames,
-							'album' => $songLinkedtoArtist->getAlbums(),
+							'path' => substr($songLinkedToArtist->getPath(), 20),
+							'title' => $songLinkedToArtist->getTitle(),
+							'artists' => $artistsArray,
+							'moods' => $moodNames,
+							'albums' => $albumsArray,
 						];
 				}
 			}
 		}
 
 		if ($askedAlbums) {
+
 			foreach ($askedAlbums as $askedAlbum) {
 
 				$_askedAlbum = $albumRepo->findOneBy(['name' => $askedAlbum]);
 				$songsLinkedtoAlbum = $_askedAlbum->getSongs()->getValues();
-				// dd($songsLinkedtoMood);
+
 				foreach ($songsLinkedtoAlbum as $songLinkedtoAlbum) {
 
-					// dd($songLinkedtoMood->getArtist()->getValues());
-					// dd($songLinkedtoMood->getArtist()->getValues()[0]->getName()); // "Alpha Wann"
+					$artistsArray = [];
+					$songHasArt = $songLinkedtoAlbum->getSongHasArtists(); 
+					foreach ($songHasArt as $sameSongDifArtist) {
+						$artistType = $sameSongDifArtist->getArtistType()->getName();
+						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
+					}
 
-					$mltplArtists = $songLinkedtoAlbum->getArtist()->getValues();
-					$artistNames = [];
-					foreach ($mltplArtists as $unqArtist){
-						$artistNames[] = $unqArtist->getName();
+					$moodNames = [];
+					$mltplMoods = $songLinkedtoAlbum->getMoods()->getValues();
+					foreach ($mltplMoods as $unqMood) {
+						$moodNames[] = $unqMood->getName();
+					}
+
+					$albumsArray = []; //ALL ALBUMS THE SONG IS IN
+					$_albumsArray = $songLinkedtoAlbum->getAlbums()->getValues(); // OTHER ALBUMS THE SONG IS FEATURED IN
+
+					foreach ($_albumsArray as $unqAlbum) {
+						$albumsArrayUnqName = $unqAlbum->getName();
+						$albumsArrayYear = $unqAlbum->getYear();
+
+						$unqAlbumArtists = [];
+						$albumsArrayArtists = $unqAlbum->getArtists()->getValues();
+						foreach ($albumsArrayArtists as $unqAlbumArtist) {
+							$unqAlbumArtists[] = $unqAlbumArtist->getName();
+						}
+
+						$albumsArray[$albumsArrayUnqName]['year'] = $albumsArrayYear;
+						$albumsArray[$albumsArrayUnqName]['artists'] = $unqAlbumArtists;
 					}
 
 					$songsQueue[] =
 						[
 							'path' => substr($songLinkedtoAlbum->getPath(), 20),
-							// 'path' => $songLinkedtoMood->getPath(),
+							// 'path' => $songLinkedtoAlbum->getPath(),
 							'title' => $songLinkedtoAlbum->getTitle(),
-							'artists' => $artistNames,
-							'album' => $songLinkedtoAlbum->getAlbums(),
+							'artists' => $artistsArray,
+							'moods' => $moodNames,
+							'albums' => $albumsArray,
 						];
 				}
 			}
@@ -200,12 +256,45 @@ class PlayerController extends AbstractController
 		if ($askedYears) {
 			foreach ($askedYears as $askedYear) {
 				foreach ($songRepo->findBy(['year' => $askedYear]) as $_song) {
+
+					$artistsArray = [];
+					$songHasArt = $_song->getSongHasArtists(); 
+					foreach ($songHasArt as $sameSongDifArtist) {
+						$artistType = $sameSongDifArtist->getArtistType()->getName();
+						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
+					}
+
+					$moodNames = [];
+					$mltplMoods = $_song->getMoods()->getValues();
+					foreach ($mltplMoods as $unqMood) {
+						$moodNames[] = $unqMood->getName();
+					}
+
+					$albumsArray = []; //ALL ALBUMS THE SONG IS IN
+					$_albumsArray = $_song->getAlbums()->getValues(); // OTHER ALBUMS THE SONG IS FEATURED IN
+
+					foreach ($_albumsArray as $unqAlbum) {
+						$albumsArrayUnqName = $unqAlbum->getName();
+						$albumsArrayYear = $unqAlbum->getYear();
+
+						$unqAlbumArtists = [];
+						$albumsArrayArtists = $unqAlbum->getArtists()->getValues();
+						foreach ($albumsArrayArtists as $unqAlbumArtist) {
+							$unqAlbumArtists[] = $unqAlbumArtist->getName();
+						}
+
+						$albumsArray[$albumsArrayUnqName]['year'] = $albumsArrayYear;
+						$albumsArray[$albumsArrayUnqName]['artists'] = $unqAlbumArtists;
+					}
+
 					$songsQueue[] =
 						[
 							'path' => substr($_song->getPath(), 20),
+							// 'path' => $songLinkedtoAlbum->getPath(),
 							'title' => $_song->getTitle(),
-							'artists' => $_song->getArtist(),
-							'album' => $_song->getAlbums(),
+							'artists' => $artistsArray,
+							'moods' => $moodNames,
+							'albums' => $albumsArray,
 						];
 				}
 			}

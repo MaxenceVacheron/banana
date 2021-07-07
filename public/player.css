@@ -8,6 +8,8 @@
 		# purple: 665775 #
 	} */
 
+
+
 	* {
 		-webkit-transition: all 0.2s ease;
 		-moz-transition: all 0.2s ease;
@@ -55,7 +57,7 @@
 		align-items: center;
 		padding: 38px 5px 1px 5px ;
 		position: relative;
-		bottom: 470px;
+		bottom: 62%;
 		z-index:999;
 		transition :all 0.5s ease;
 	}

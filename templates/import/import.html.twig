@@ -5,15 +5,83 @@
 
 {% block body %}
 	<style>
-		.example-wrapper {
-			margin: 1em auto;
-			max-width: 800px;
-			width: 95%;
-			font: 18px / 1.5 sans-serif;
+
+
+
+		body {
+			--primaryColor: #665775;
+			--secondaryColor: #576675;
+			--accentColor: #667557;
+			background-color: var(--primaryColor);
+
 		}
-		.example-wrapper code {
-			background: #F5F5F5;
-			padding: 2px 6px;
+
+		hr {
+			border: 0;
+			height: 1px;
+			background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+		}
+
+		.example-wrapper {
+			max-width: 800px;
+			font: 18px / 1.5 sans-serif;
+			background-color: var(--primaryColor);
+		}
+
+		.moods-container {
+			flex-flow: row nowrap;
+			/* overflow: auto; */
+			display: grid;
+			/* grid-template-rows: auto auto;1 */
+			grid-auto-flow: column;
+			overflow-x: scroll;
+			-ms-overflow-style: none;
+			padding-inline-start: 0;
+			grid-template-rows: auto auto;
+			grid-auto-flow: column;
+		}
+
+		.mood-container::-webkit-scrollbar {
+			display: none;
+		}
+		1 ul.ks-cboxtags {
+			list-style: none;
+			padding: 20px;
+		}
+		ul.ks-cboxtags li {
+			display: inline;
+		}
+		ul.ks-cboxtags li label {
+			display: inline-block;
+			/*background-color: rgba(255, 255, 255, .9);*/
+			background-color: var(--secondaryColor);
+			color: #adadad;
+			border-radius: 25px;
+			white-space: nowrap;
+			margin: 3px 0;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			-webkit-tap-highlight-color: transparent;
+			transition: all 0.2s;
+		}
+		ul.ks-cboxtags li label {
+			padding: 4px 6px;
+			cursor: pointer;
+		}
+		ul.ks-cboxtags li input[type="checkbox"]:checked + label {
+			background-color: var(--accentColor);
+			color: #fff;
+			transition: all 0.2s;
+		}
+		ul.ks-cboxtags li input[type="checkbox"] {
+			display: absolute;
+		}
+		ul.ks-cboxtags li input[type="checkbox"] {
+			position: absolute;
+			opacity: 0;
 		}
 	</style>
 
@@ -22,30 +90,57 @@
 		Here is what was found in the
 		<strong>AutomaticallyAddToBanana</strong>
 		folder.
-		<br>
 		Please review the info found in the files before adding them to the database.
-		<br><br><br>
-		<h3>Please enter multiple artist like so : artist1::artist2::artist3</h3>
+		<br>
 
-		<form action="/import/doImport" method="POST">
+		<form id="theForm" action="/import/doImport" method="POST">
+			<datalist
+				id="allArtists">
+				{# <option>{{item['artist']}}</option> #}
+				{% for artistName in allArtistsNames %}
+					<option>{{artistName}}</option>
+				{% endfor %}
+			</datalist>
+
 
 			{% for item in songsInfo %}
+				<hr>
 
-				<label for="title">Title:</label>
 				<input type="text" id="title{{loop.index0}}" name="{{loop.index0}}[title]" value="{{item['title']}}"><br>
-				<label for="artist">Artist:</label>
-				<input type="text" id="artist{{loop.index0}}" name="{{loop.index0}}[artist]" value="{{item['artist']}}"><br>
-				<label for="year">Year:</label>
+
+
+				{# 
+												<label for="mainArtists">Main Artists:</label>
+												<input type="text" id="mainArtists{{loop.index0}}" name="{{loop.index0}}[mainArtist][]" value="{{item['artist']}}" list="allArtists" autocomplete="off"><br> #}
+				<div class="artistsInput">
+					<input type="text" id="artists{{loop.index0}}" name="{{loop.index0}}[artists][CHANGEME]" value="{{item['artist']}}" list="allArtists" autocomplete="off">
+					<select name="" id="{{loop.index0}}collabType">
+						{% for allExistingArtistTypesName in allExistingArtistTypesNames %}
+							<option>{{allExistingArtistTypesName}}</option>
+						{% endfor %}
+					</select>
+					<button onclick="addArtistField(this)" type="button">+</button>
+				</div>
+				{# <input type="text" id="Artist{{loop.index0}}" name="{{loop.index0}}[Artist][CHANGEME]" value="" list="allArtists" autocomplete="off">
+								<select name="collabType" id="{{loop.index0}}collabType">
+									{% for allExistingArtistTypesName in allExistingArtistTypesNames %}
+										<option>{{allExistingArtistTypesName}}</option>
+									{% endfor %}
+								</select> #}
+
 				<input type="number" id="year{{loop.index0}}" name="{{loop.index0}}[year]" value="{{ 'now' | date('Y') }}"><br>
 
-				<label for="mood">Moods:</label>
-				{% for moodName in allMoodsNames %}
-					<input type="checkbox" id="mood{{loop.index0}}" name="{{loop.parent.loop.index0}}[mood][]" value="{{moodName}}">{{moodName}}<br>
-				{% endfor %}
-					<input type="text" id="mood{{loop.index0}}" name="{{loop.index0}}[mood][]" value="Music"><br>
+				<ul class="ks-cboxtags moods-container">
+					{% for moodName in allMoodsNames %}
+						<li><input type="checkbox" id="{{loop.parent.loop.index0}}mood{{loop.index0}}" name="{{loop.parent.loop.index0}}[mood][]" value="{{moodName}}" class="moodSelector"><label for="{{loop.parent.loop.index0}}mood{{loop.index0}}">{{moodName}}</label>
+						</li>
+					{% endfor %}
+				</ul>
 
 
-				<label for="path">Path:</label>
+				<input type="text" id="mood{{loop.index0}}" name="{{loop.index0}}[mood][]" value="default"><br>
+
+
 				<input type="text" id="path{{loop.index0}}" name="{{loop.index0}}[path]" value="{{item['path']}}" readonly><br><br>
 
 			{% endfor %}

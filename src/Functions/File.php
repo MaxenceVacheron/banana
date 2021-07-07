@@ -16,7 +16,6 @@ use getID3;
 class File
 {
 
-
 	public function listDir(string $dir): array {
 		$listing =[];
 		
@@ -86,8 +85,6 @@ class File
 				} else {
 					$songArtist = iconv("UTF-16", "UTF-8", $songArtist);
 				}
-	
-	
 	
 			//GETTING SONG TITLE/////////////////////////////////////////////////////////////////////////////////////////////////////////
 			

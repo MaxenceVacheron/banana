@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Functions\File;
 use App\Entity\Album;
 use App\Entity\Artist;
+use App\Entity\ArtistType;
 use App\Entity\Mood;
 use App\Entity\Song;
+use App\Entity\SongHasArtist;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,6 +73,12 @@ class ImportController extends AbstractController
             $allAlbumsNames[] = $existingAlbum->getName();
         }
 
+        $artistTypeRepo = $this->em->getRepository(ArtistType::class);
+        $allExistingArtistTypes = $artistTypeRepo->findAll();
+        $allExistingArtistTypesNames = [];
+        foreach ($allExistingArtistTypes as $allExistingArtistType) {
+            $allExistingArtistTypesNames[] = $allExistingArtistType->getName();
+        }
 
 
         $songsInfo = $this->file->getSmartSongsInfo('/var/www/html/public/AutomaticallyAddToBanana/');
@@ -89,6 +97,7 @@ class ImportController extends AbstractController
             'allMoodsNames' => $allMoodsNames,
             'allArtistsNames' => $allArtistsNames,
             'allAlbumsNames' => $allAlbumsNames,
+            'allExistingArtistTypesNames' => $allExistingArtistTypesNames,
         ]);
     }
 
@@ -98,7 +107,7 @@ class ImportController extends AbstractController
     public function doImport(Request $request)
     {
 
-        // dd($request->request->all());
+        dd($request->request->all());
 
 
         $songMoods = [];
@@ -107,9 +116,8 @@ class ImportController extends AbstractController
             $songMoods = $songBeingImported["mood"];
             $songTitle = $songBeingImported["title"];
 
-            $songArtistsString = $songBeingImported["artist"];
-            $songArtists  = explode("::", $songArtistsString);
-
+            // $songArtistsString = $songBeingImported["artist"];
+            $songArtistsArray = $songBeingImported["artists"];
 
             $songYear = $songBeingImported["year"];
 
@@ -135,6 +143,14 @@ class ImportController extends AbstractController
                 }
             }
 
+            // GET ALL TYPE OF ARTIST IN DB
+            $artistTypeRepo = $this->em->getRepository(ArtistType::class);
+            $allExistingArtistTypes = $artistTypeRepo->findAll();
+            $allExistingArtistTypesNames = [];
+            foreach ($allExistingArtistTypes as $allExistingArtistType) {
+                $allExistingArtistTypesNames[] = $allExistingArtistType->getName();
+            }
+
 
             // GET ALL ARTISTS IN DB
             $artistRepo = $this->em->getRepository(Artist::class);
@@ -144,12 +160,14 @@ class ImportController extends AbstractController
                 $allArtistsNames[] = $existingArtist->getName();
             }
             // CREATE ARTIST ENTITY FOR UNRECCOGNIZED ARTISTS
-            foreach ($songArtists as $songArtist) {
-                if (!in_array($songArtist, $allArtistsNames)) {
-                    $newAddedArtist = new Artist();
-                    $newAddedArtist->setName($songArtist);
-                    $this->em->persist($newAddedArtist);
-                    $this->em->flush();
+            foreach ($songArtistsArray as $typeArrayOfArtist) {
+                foreach ($typeArrayOfArtist as $songArtist) {
+                    if (!in_array($songArtist, $allArtistsNames)) {
+                        $newAddedArtist = new Artist();
+                        $newAddedArtist->setName($songArtist);
+                        $this->em->persist($newAddedArtist);
+                        $this->em->flush();
+                    }
                 }
             }
 
@@ -157,18 +175,44 @@ class ImportController extends AbstractController
             $newSong->setTitle($songTitle)
                 ->setYear($songYear)
                 ->setPath($newSongPath);
-            
+
             // LINKING SONG TO MOOD
             foreach ($songMoods as $songMood) {
                 $addedMood = $moodRepo->findOneBy(['name' => $songMood]);
                 $newSong->addMood($addedMood);
             }
 
-            // LINKING SONG TO ARTIST
-            foreach ($songArtists as $songArtist) {
-                $addedSongArtist = $artistRepo->findOneBy(['name' => $songArtist]);
-                $newSong->addArtist($addedSongArtist);
+            // // LINKING SONG TO ARTIST
+            // foreach ($songArtistsArray as $typeArrayOfArtist) {
+            //     foreach ($typeArrayOfArtist as $songArtist) {
+            //         $addedSongArtist = $artistRepo->findOneBy(['name' => $songArtist]);
+            //         $newSong->addArtist($addedSongArtist);
+            //     }
+            // }
+
+            // dd(array_keys($songArtistsArray)); // main, feat, sample, og, back...
+
+            $submitedTypesOfArtists = array_keys($songArtistsArray);
+
+            foreach ($submitedTypesOfArtists as $submitedTypeOfArtists) {
+                foreach ($songArtistsArray[$submitedTypeOfArtists] as $artist) {
+
+
+                    $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
+                    $addedType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
+
+
+                    $songArtistRelation = new SongHasArtist();
+                    $songArtistRelation->setSong($newSong)
+                        ->setArtist($addedSongArtist)
+                        ->setArtistType($addedType);
+                    $this->em->persist($songArtistRelation);
+                    
+                }
             }
+
+
+
 
             $this->em->persist($newSong);
             rename($songPath, $newSongPath);

@@ -102,6 +102,11 @@ function constructor() {
 			}
 	}));
 
+
+	playerCoverArt.addEventListener('dblclick', function (e) {
+		openInfo('currentSong');
+	});
+
 }
 
 function humanReadable(string) {
@@ -293,7 +298,7 @@ function playQueue(jsonQueue)
 		// }); #})
 
 		// html += '<div data-q="' + index + '" playing="0" class="queue_song"><div class="queue_song_covert" data-q="' + index + '">&loz;  </div><div class="queue_song_artist" data-q="' + index + '">' + obj['artists'] + '</div><div class="queue_song_title" data-q="' + index + '">' + obj['title'] + '</div></div>'
-		html += '<div onclick="playSong(' + index + ')" data-q="' + index + '" playing="0" class="queue_song"><div class="queue_song_covert" >&loz;  </div><div class="queue_song_artist" >' + obj['artists'] + '</div><div class="queue_song_title">' + obj['title'] + '</div></div>'
+		html += '<div onclick="playSong(' + index + ')" data-q="' + index + '" playing="0" class="queue_song"><div class="queue_song_covert" >&loz;  </div><div class="queue_song_artist" >' + obj['artists']['main'] + '</div><div class="queue_song_title">' + obj['title'] + '</div></div>'
 
 	});
 
@@ -373,7 +378,7 @@ function playSong(Q_ID) {
     	});
 
 	playerCurrentTitle.innerHTML = song.title; 
-	playerCurrentArtist.innerHTML = song.artists; 
+	playerCurrentArtist.innerHTML = song.artists.main; 
 	
 
 	var q_el = document.querySelectorAll('[data-q="'+ Q_ID +'"]');
@@ -424,5 +429,8 @@ function pauseAudio() {
 
 }
 
+function openInfo(songString) {
+	alert('bite');
 
+}
 

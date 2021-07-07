@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=1080, initial-scale=1.0">
+	<title>Add Info</title>
+</head>
+
+<body>
+	<datalist id="allArtists">
+		<option value="Alpha Wann">
+		<option value="Lomepal">
+		<option value="Dimeh">
+		<option value="Josman">
+		<option value="Damso">
+	</datalist>
+	<div id="getInfoSongIDContainer">
+		<input type="text" id="inputsongid" name="inputname" value="1" list="allArtists" autocomplete="off">
+		<button id="getInfo" onclick="getInfo()">Get Info</button>
+	</div>
+	<hr>
+	<form id="infoCreateForm" action="/info/create" method="GET">
+		<div class="edit-info" style="z-index: 999;">
+			<input type="number" id="songID" name="songID" value="1">
+			<br>
+			<input type="text" id="songName" name="songName" value="songName">
+
+			<div id="artistInput">
+				<input type="text" id="artistName" name="artists[CHANGEME][]" value="artistName"
+					list="allArtists" autocomplete="off">
+				<select type="text" id="artistType" name="artistType" value="mainArtistValue"
+					list="allArtistTypes" autocomplete="off">
+					<option value="Main">Main</option>
+					<option value="Feat">Feat</option>
+					<option value="Prod">Prod</option>
+				</select>
+				<button onclick="addArtistField(this)" type="button" id="addrowbutton">+</button>
+
+			</div>
+			<!-- <input type="text" id="songName" name="songName" value="songName"> -->
+
+
+		</div>
+		<input type="submit" value="Update">
+
+	</form>
+
+
+</body>
+<script src="sendcreatedata.js"></script>
+
+</html>
