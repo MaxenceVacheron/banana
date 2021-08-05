@@ -6,6 +6,89 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=1080, initial-scale=1.0">
 	<title>Add Info</title>
+	<style>
+		body {
+			--primaryColor: #665775;
+			--secondaryColor: #576675;
+			--accentColor: #667557;
+			background-color: var(--primaryColor);
+
+		}
+
+		hr {
+			border: 0;
+			height: 1px;
+			background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+		}
+
+		.edit-info {
+			display: block;
+		}
+
+
+		.moods-container {
+			flex-flow: row nowrap;
+			/* overflow: auto; */
+			display: grid;
+			/* grid-template-rows: auto auto;1 */
+			grid-auto-flow: column;
+			overflow-x: scroll;
+			-ms-overflow-style: none;
+			padding-inline-start: 0;
+			grid-template-rows: auto auto;
+			grid-auto-flow: column;
+		}
+
+		.mood-container::-webkit-scrollbar {
+			display: none;
+		}
+
+		ul.ks-cboxtags {
+			list-style: none;
+			padding: 20px;
+		}
+
+		ul.ks-cboxtags li {
+			display: inline;
+		}
+
+		ul.ks-cboxtags li label {
+			display: inline-block;
+			/*background-color: rgba(255, 255, 255, .9);*/
+			background-color: var(--secondaryColor);
+			color: #adadad;
+			border-radius: 25px;
+			white-space: nowrap;
+			margin: 3px 0;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			-webkit-tap-highlight-color: transparent;
+			transition: all 0.2s;
+		}
+
+		ul.ks-cboxtags li label {
+			padding: 4px 6px;
+			cursor: pointer;
+		}
+
+		ul.ks-cboxtags li input[type="checkbox"]:checked+label {
+			background-color: var(--accentColor);
+			color: #fff;
+			transition: all 0.2s;
+		}
+
+		ul.ks-cboxtags li input[type="checkbox"] {
+			display: absolute;
+		}
+
+		ul.ks-cboxtags li input[type="checkbox"] {
+			position: absolute;
+			opacity: 0;
+		}
+	</style>
 </head>
 
 <body>
@@ -17,18 +100,18 @@
 		<option value="Damso">
 	</datalist>
 	<div id="getInfoSongIDContainer">
-		<input type="text" id="inputsongid" name="inputname" value="1" list="allArtists" autocomplete="off">
+		<input type="text" id="inputsongid" name="inputname" value="1" autocomplete="off">
 		<button id="getInfo" onclick="getInfo()">Get Info</button>
 	</div>
 	<hr>
 	<form id="infoCreateForm" action="/info/create" method="GET">
 		<div class="edit-info" style="z-index: 999;">
-			<input type="number" id="songID" name="songID" value="1">
+			<input type="number" id="songID" name="songID" value="1" readonly>
 			<br>
-			<input type="text" id="songName" name="songName" value="songName">
+			<input type="text" id="songName" name="title" value="songName">
 
 			<div id="artistInput">
-				<input type="text" id="artistName" name="artists[CHANGEME][]" value="artistName"
+				<!-- <input type="text" id="artistName" name="artists[CHANGEME][]" value="artistName"
 					list="allArtists" autocomplete="off">
 				<select type="text" id="artistType" name="artistType" value="mainArtistValue"
 					list="allArtistTypes" autocomplete="off">
@@ -36,9 +119,15 @@
 					<option value="Feat">Feat</option>
 					<option value="Prod">Prod</option>
 				</select>
-				<button onclick="addArtistField(this)" type="button" id="addrowbutton">+</button>
+				<button onclick="addArtistField(this)" type="button" id="addrowbutton">+</button> -->
 
 			</div>
+			<ul id="moodul" class="ks-cboxtags moods-container">
+				<!-- {% for moodName in allMoodsNames %}
+					<li><input type="checkbox" id="{{loop.parent.loop.index0}}mood{{loop.index0}}" name="{{loop.parent.loop.index0}}[mood][]" value="{{moodName}}" class="moodSelector"><label for="{{loop.parent.loop.index0}}mood{{loop.index0}}">{{moodName}}</label>
+					</li>
+				 {% endfor %} -->
+			</ul>
 			<!-- <input type="text" id="songName" name="songName" value="songName"> -->
 
 

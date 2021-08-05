@@ -5,6 +5,8 @@ var MoodsAndArtistTypes = getMoodsAndArtistTypes();
 		tempArtDatalist += '<option>' + element + '</option>';
 	})
 	tempArtDatalist += '</datalist>';
+	allMoods = MoodsAndArtistTypes['moods'];
+
 	
 window.addEventListener("load", function () {
 		document.getElementById('infoCreateForm').addEventListener("submit", function (e) {
@@ -67,25 +69,31 @@ window.addEventListener("load", function () {
 		mainArtists = Array.from(info[0]['artists']['main']);
 
 		allArtistsTypes = MoodsAndArtistTypes['artistTypes'];
-		allMoods = MoodsAndArtistTypes['moods'];
 
-		allArtistsTypes.forEach(element => {
+		// alert(allArtistsTypes);
+
+		allArtistsTypes.forEach((artTypeLoop, index) => {
+		// allArtistsTypes.forEach(artTypeLoop => {
 			// document.getElementById('songName').value = info[0]['title'];
-			try {
-				t_array = Array.from(info[0]['artists'][element]);
+			try {	
 
-				t_array.forEach(element2 => {
-					console.log(element);
-					console.log(element2);
+				t_array = Array.from(info[0]['artists'][artTypeLoop]);
+				console.log('index is' + index);
+
+				t_array.forEach(currArt => {
+					console.log(artTypeLoop);
+					console.log(currArt);
 
 					artisDiv = document.getElementById('artistInput');
 
-					html = '<br><input type="text" id="'+ element2 +'" name="artists[' + element + '][] value="'+ element2 +'">'
-					html += '<select type="text" name="artistType" value="' + element + '">';
+					html = '<br><input type="text" id="'+ currArt +'" name="artists[' + artTypeLoop + '][]" value="'+ currArt +'">'
+					html += '<select type="text" id="'+ artTypeLoop + currArt +'" name="artistType" value="' + artTypeLoop + '">';
 					html += tempArtDatalist;
 					console.log(html);
 					// document.body.innerHTML += (html);
 					artisDiv.innerHTML += (html);
+					document.getElementById(artTypeLoop + currArt).selectedIndex = index;
+
 					// document.getElementById('Drakeprod').setAttribute('value', 'Drakeprod');
 
 
@@ -93,30 +101,28 @@ window.addEventListener("load", function () {
 			} catch (error) {
 				console.log('ERROR CAUGHT:');
 				console.log('element not found is');
-				console.log(element);
+				console.log(artTypeLoop);
+
 				console.error(error);
 				// expected output: ReferenceError: nonExistentFunction is not defined
 				// Note - error messages will vary depending on browser
 			}
-
-
-
+			
 		})
 
+		songMoods = info[0]['moods'];
+		allMoods.forEach((mood,index ) => {
+				console.log('Mood found:');
+				console.log(mood);
+				html = '';
+				html +='<li><input type="checkbox" id="mood ' + index + '" name="mood[]" value="' + mood + '" class="moodSelector"><label for="mood ' + index + '">' + mood + '</label></li>';
+				document.getElementById('moodul').innerHTML += html;
+			} )
+
 	}
-	function addArtistField(song) {
-		// console.log(song.parentElement);
-
-		// console.log(song);
-		// Get the element
-		var elem = song.parentElement;
-
-		// Create a copy of it
-		var clone = elem.cloneNode(true);
-
-		clone.innerHTML += '<button onclick="remArtistField(this)" type="button" "="">-</button>';
-
-		elem.after(clone);
+	function addArtistField() {
+html = '<br><input type="text" id="'+ currArt +'" name="artists[' + element + '][]" value="'+ currArt +'">'
+					html += '<select type="text" name="artistType" value="' + element + '">';
 
 	}
 
