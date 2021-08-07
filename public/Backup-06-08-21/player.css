@@ -19,29 +19,24 @@
 	}
 
 	body {
-		/* background-color: #665775; */
+		background-color: #665775;
 		font-family: Ubuntu, "times new roman", times, roman, serif;
 		margin: 0% 2% 2% 2%;
 		overflow: hidden;
 		transition: all 0.5s ease;
-
-		--primaryColor: #665775;
-		--secondaryColor: #576675;
-		--accentColor: #667557;
-		background-color: var(--primaryColor);
 	}
 
 	.playlistBuilder {
 		background-color: #576675;
-		border-radius: 0px 0px 20px 20px;
-		height: 80%;
+		border-radius:0px 0px 20px 20px ;
+		height:80%;
 		display: flex;
 		flex-flow: column nowrap;
 		align-items: center;
 		padding: 5px;
 		position: relative;
 		top: 0px;
-		z-index: 999;
+		z-index:999;
 		transition: all 0.5s ease;
 
 	}
@@ -55,16 +50,16 @@
 
 	.queueContainer {
 		background-color: #576675;
-		border-radius: 20px 20px 0px 0px;
-		height: 80%;
+		border-radius:20px 20px 0px 0px ;
+		height:80%;
 		display: flex;
 		flex-flow: column nowrap;
 		align-items: center;
-		padding: 38px 5px 1px 5px;
+		padding: 38px 5px 1px 5px ;
 		position: relative;
-		bottom: 65%;
-		z-index: 999;
-		transition: all 0.5s ease;
+		bottom: 62%;
+		z-index:999;
+		transition :all 0.5s ease;
 	}
 
 	.queueContainerHidden {
@@ -74,47 +69,25 @@
 
 	}
 
-	#queueContainerContent {
-		overflow: auto;
-		padding-top: 5%;
+	#queueContainerContent{
+		overflow:auto;
 	}
 
-	.handle {
-		cursor: grab;
-		z-index: 9999999999;
-		min-width: 8vw;
-		float: right;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-	}
-
-	.builderToggleContainer {
-		position: absolute;
-		bottom: 0;
-		width: 95%;
-	}
-
-	/* Important styles */
+		/* Important styles */
 	.toggle {
-		float: right;
-		/* position: absolute;
+		position: absolute;
 		bottom:-10px;
 		right:15px;
-		display: block; */
+		display: block;
 		width: 28px;
 		height: 30px;
 		margin: 30px auto 10px;
 	}
 
-	.queueToggleContainer {
-		position: absolute;
-		top: 0;
-		width: 95%;
-	}
-
 	.toggle#queuetoggle {
-		float: right;
+		position: absolute;
+		top:-10px;
+		right:15px;
 	}
 
 	.toggle span:after,
@@ -124,11 +97,9 @@
 		left: 0;
 		top: -9px;
 	}
-
-	.toggle span:after {
+	.toggle span:after{
 		top: 9px;
 	}
-
 	.toggle span {
 		position: relative;
 		display: block;
@@ -149,11 +120,9 @@
 	.toggle.on span {
 		background-color: transparent;
 	}
-
 	.toggle.on span:before {
 		transform: rotate(45deg) translate(5px, 5px);
 	}
-
 	.toggle.on span:after {
 		transform: rotate(-45deg) translate(7px, -8px);
 	}
@@ -206,8 +175,8 @@
 		flex-flow: row wrap;
 		justify-content: space-evenly;
 
-		max-height: 75%;
-		overflow: auto;
+		max-height : 75%;
+		overflow:auto;
 	}
 
 	.builderFilter {
@@ -219,7 +188,7 @@
 	}
 
 
-
+	
 	#Mood span {
 		font-size: xx-large;
 		font-weight: 500;
@@ -229,31 +198,33 @@
 
 	.tabcontent .selectedFilter {
 		background-color: #667557;
-	}
+	} 
 
 	.player {
-		position: absolute;
-		bottom: 10%;
-		left: 1px;
-		right: 1px;
-		/* border : 1px solid purple; */
+		position:absolute;
+		top:10%;
+		bottom:1px;
+		left:1px;
+		right:1px;
+		border : 1px solid purple;
 	}
 
 	#coverArtContainer {
-		display: flex;
+		display:flex;
 		justify-content: center;
 	}
 
 	#coverArt {
-		border: 1px solid blue;
+		border: 1px solid  blue;
 		width: 95vw;
 		/* height: 95vw; */
 	}
 
 	#currentTitleArtistContainer {
-		display: flex;
+		display:flex;
 		flex-flow: column nowrap;
 		align-items: center
+
 	}
 
 	#playerBar {
@@ -271,29 +242,25 @@
 	}
 
 	.hiddenWhileLoad {
-		display: none;
+		display:none;
 	}
 
-	#html5audio {
-		display: none;
+	#html5audio{
+		display:none;
 	}
 
-	.queue_song {
-		border: 1px solid grey;
-		padding: 5px 5px 5px 5px;
-		margin: 5px 5px 5px 5px;
-		min-width: 90vw;
-		display: flex;
-		flex-flow: row nowrap;
-		justify-content: space-between;
-		align-items: center;
+	.queue_song{
+		border : 1px solid grey;
+		padding: 5px 5px 5px 5px ;
+		margin: 5px 5px 5px 5px ;
+		min-width : 90vw;
 	}
 
-	.playingSong {
+	.playingSong{
 		border: 2px rgb(238, 205, 123) solid;
 	}
 
-	.iframemodal {
+	.iframemodal{
 		height: 70vh;
 		width: 88vw;
 		position: absolute;
@@ -304,104 +271,11 @@
 		z-index: 99999;
 	}
 
-	.modalExtBackground {
-		display: none;
+	.modalExtBackground{
 		position: absolute;
 		left: 0%;
-		top: 0%;
+		top: 0%;	
 		width: 200vw;
 		height: 200vw;
-		z-index: 99998;
+		z-index:99998;
 	}
-
-
-	/* INFO EDIT */
-
-	hr {
-		border: 0;
-		height: 1px;
-		background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
-	}
-
-	.editInfoContainer {
-		background-color: var(--secondaryColor);
-		border: 1px gold;
-		display: none;
-		height: 50vh;
-		width: 88vw;
-		position: absolute;
-		float: left;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 99999;
-	}
-
-	.edit-info {
-		display: block;
-	}
-
-	.moods-container {
-		flex-flow: row nowrap;
-		/* overflow: auto; */
-		display: grid;
-		/* grid-template-rows: auto auto;1 */
-		grid-auto-flow: column;
-		overflow-x: scroll;
-		-ms-overflow-style: none;
-		padding-inline-start: 0;
-		grid-template-rows: auto auto;
-		grid-auto-flow: column;
-	}
-
-	.mood-container::-webkit-scrollbar {
-		display: none;
-	}
-
-	ul.ks-cboxtags {
-		list-style: none;
-		padding: 20px;
-	}
-
-	ul.ks-cboxtags li {
-		display: inline;
-	}
-
-	ul.ks-cboxtags li label {
-		display: inline-block;
-		/*background-color: rgba(255, 255, 255, .9);*/
-		background-color: var(--secondaryColor);
-		color: #adadad;
-		border-radius: 25px;
-		white-space: nowrap;
-		margin: 3px 0;
-		-webkit-touch-callout: none;
-		-webkit-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-		-webkit-tap-highlight-color: transparent;
-		transition: all 0.2s;
-	}
-
-	ul.ks-cboxtags li label {
-		padding: 4px 6px;
-		cursor: pointer;
-	}
-
-	ul.ks-cboxtags li input[type="checkbox"]:checked+label {
-		background-color: var(--accentColor);
-		color: #fff;
-		transition: all 0.2s;
-	}
-
-	ul.ks-cboxtags li input[type="checkbox"] {
-		display: absolute;
-	}
-
-	ul.ks-cboxtags li input[type="checkbox"] {
-		position: absolute;
-		opacity: 0;
-	}
-
-	/* END INFO EDIT */

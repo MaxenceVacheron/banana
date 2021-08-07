@@ -7,6 +7,7 @@ use App\Entity\Artist;
 use App\Entity\ArtistType;
 use App\Entity\Mood;
 use App\Entity\Song;
+use App\Entity\SongHasArtist;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +22,6 @@ class DataController extends AbstractController
     {
         $this->em = $em;
     }
-
 
     /**
      * @Route("/info/get", name="dataGet", methods={"GET", "POST"})
@@ -38,7 +38,7 @@ class DataController extends AbstractController
         $askedQuery = $request->query->all();
         // dd($askedQuery);
 
-        $askedMood = array_key_exists('mood', $askedQuery) ? $askedQuery['mood'] : null;
+        $askedMood = array_key_exists('mood', $askedQuery) ? $askedQuery['mood'] : null; //IMPLEMENT THIS EVERYWHERE
         $askedArtist = array_key_exists('artist', $askedQuery) ? $askedQuery['artist'] : null;
         $askedAlbum = array_key_exists('album', $askedQuery) ? $askedQuery['album'] : null;
         $askedSong = array_key_exists('song', $askedQuery) ? $askedQuery['song'] : null;
@@ -86,6 +86,7 @@ class DataController extends AbstractController
                     'path' => substr($_askedSong->getPath(), 20),
                     // 'path' => $_askedSong->getPath(),
                     'title' => $_askedSong->getTitle(),
+                    'year' => $_askedSong->getYear(),
                     'artists' => $artistsArray,
                     'moods' => $moodNames,
                     'albums' => $albumsArray,
@@ -93,9 +94,6 @@ class DataController extends AbstractController
 
             // dd($songInfo);
         }
-
-
-
 
         $response = new Response(json_encode($songInfo, JSON_UNESCAPED_UNICODE));
         $response->headers->set('Access-Control-Allow-Origin', '*');
@@ -106,16 +104,128 @@ class DataController extends AbstractController
     /**
      * @Route("/info/create", name="dataCreate", methods={"GET", "POST"})
      */
-    public function insertInfo(Request $request): Response
+    public function insertInfo(Request $request)
     {
 
-        $askedQuery = $request->query->all();
-        dd($askedQuery);
+        $songRepo = $this->em->getRepository(Song::class);
+
+        $songBeingImported = $request->query->all();
+        // dd($songBeingImported);
+
+        $songId = $songBeingImported["id"];
+        // $songMoods = $songBeingImported["mood"];
+        $songMoods = array_key_exists('mood', $songBeingImported) ? $songBeingImported['mood'] : ['music']; //IMPLEMENT THIS EVERYWHERE
+        $songTitle = $songBeingImported["title"];
+        $songArtistsArray = $songBeingImported["artists"];
+        $songYear = $songBeingImported["year"];
+        // dd($songMoods);
+
+        // $songPath = $songBeingImported["path"];
+        // $newSongPath = str_replace("AutomaticallyAddToBanana/", "AutomaticallyAddedToBanana/", $songPath);
+        // dd($newSongPath);
+
+        // GET ALL MOODS IN DB
+        $moodRepo = $this->em->getRepository(Mood::class);
+        $allExistingMoods = $moodRepo->findAll();
+        $allMoodsNames = [];
+        foreach ($allExistingMoods as $existingMood) {
+            $allMoodsNames[] = $existingMood->getName();
+        }
+
+        // CREATE MOOD ENTITY FOR UNRECCOGNIZED MOODS
+        foreach ($songMoods as $songMood) {
+            if (!in_array($songMood, $allMoodsNames)) {
+                // dd($songMood);
+                $newAddedMood = new Mood();
+                $newAddedMood->setName($songMood);
+                $this->em->persist($newAddedMood);
+                $this->em->flush();
+            }
+        }
+
+        // GET ALL TYPE OF ARTIST IN DB
+        $artistTypeRepo = $this->em->getRepository(ArtistType::class);
+        $allExistingArtistTypes = $artistTypeRepo->findAll();
+        $allExistingArtistTypesNames = [];
+        foreach ($allExistingArtistTypes as $allExistingArtistType) {
+            $allExistingArtistTypesNames[] = $allExistingArtistType->getName();
+        }
+
+        // GET ALL ARTISTS IN DB
+        $artistRepo = $this->em->getRepository(Artist::class);
+        $allExistingArtists = $artistRepo->findAll();
+        $allArtistsNames = [];
+        foreach ($allExistingArtists as $existingArtist) {
+            $allArtistsNames[] = $existingArtist->getName();
+        }
+        // CREATE ARTIST ENTITY FOR UNRECCOGNIZED ARTISTS
+        foreach ($songArtistsArray as $typeArrayOfArtist) {
+            foreach ($typeArrayOfArtist as $songArtist) {
+                if (!in_array($songArtist, $allArtistsNames)) {
+                    $newAddedArtist = new Artist();
+                    $newAddedArtist->setName($songArtist);
+                    $this->em->persist($newAddedArtist);
+                    $this->em->flush();
+                }
+            }
+        }
+
+        $newSong = $songRepo->findBy(['id' => $songId])[0];
+        // dd($newSong);
+        $newSong->setTitle($songTitle)
+            ->setYear($songYear);
+
+        // LINKING SONG TO MOOD
+        foreach ($songMoods as $songMood) {
+            $addedMood = $moodRepo->findOneBy(['name' => $songMood]);
+            $newSong->addMood($addedMood);
+        }
+
+        // // LINKING SONG TO ARTIST
+        // foreach ($songArtistsArray as $typeArrayOfArtist) {
+        //     foreach ($typeArrayOfArtist as $songArtist) {
+        //         $addedSongArtist = $artistRepo->findOneBy(['name' => $songArtist]);
+        //         $newSong->addArtist($addedSongArtist);
+        //     }
+        // }
+
+        // dd(array_keys($songArtistsArray)); // main, feat, sample, og, back...
+
+        $submitedTypesOfArtists = array_keys($songArtistsArray);
+
+        foreach ($submitedTypesOfArtists as $submitedTypeOfArtists) {
+            foreach ($songArtistsArray[$submitedTypeOfArtists] as $artist) {
 
 
+                $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
+                $addedType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
+                $alreadyExistingArtistRelations = $newSong->getSongHasArtists();
+                foreach ($alreadyExistingArtistRelations as $alreadyExistingArtistRelationUnq) {
+                    $unqExistingRelationArtist = $alreadyExistingArtistRelationUnq->getArtist()->getName();
+                    $unqExistingRelationArtistType = $alreadyExistingArtistRelationUnq->getArtistType()->getName();
+                    // dd($unqExistingRelationArtistType);
+                    // dd($unqExistingRelationArtist);
+                    if (!($unqExistingRelationArtist = $addedSongArtist && $unqExistingRelationArtistType = $addedType)) {
+                        //if if not hte same relation (ie same artist with same artist type (ex: JJ is main and prod))
+                        $songArtistRelation = new SongHasArtist();
+                        $songArtistRelation->setSong($newSong)
+                            ->setArtist($addedSongArtist)
+                            ->setArtistType($addedType);
+                        $this->em->persist($songArtistRelation);
+                        $status = [];
+                        $status[] = 'OK';
+                    } else {
+                        $status = [];
+                        $status = '{Error : Artist & type already exist for this song}';
+                    }
+                }
+            }
+        }
 
+        $this->em->persist($newSong);
+        $this->em->flush();
 
-        $response = new Response(json_encode($askedQuery, JSON_UNESCAPED_UNICODE));
+        $response = new Response(json_encode($status, JSON_UNESCAPED_UNICODE));
         $response->headers->set('Access-Control-Allow-Origin', '*');
         $response->headers->set('Content-Type', 'application/json');
         return $response;
@@ -148,10 +258,9 @@ class DataController extends AbstractController
 
         $json = $relations;
 
-
-
         $response = new Response(json_encode($json, JSON_UNESCAPED_UNICODE));
         $response->headers->set('Access-Control-Allow-Origin', '*');
         $response->headers->set('Content-Type', 'application/json');
-        return $response;    }
+        return $response;
+    }
 }
