@@ -33,7 +33,19 @@ RUN curl -sS https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/local/bin/composer
 
 
-RUN for mod in rewrite headers; do a2enmod $mod; done && service apache2 restart
+RUN for mod in rewrite headers; do a2enmod $mod; done && a2enmod ssl && service apache2 restart
+
+# RUN openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj \
+#     "/C=../ST=...../L=..../O=..../CN=..." \
+#     -keyout ./ssl.key -out /var/www/ssl.crt
+
+# COPY /var/www/ssl.crt /etc/apache2/ssl/ssl.crt
+# COPY /var/www/ssl.key /etc/apache2/ssl/ssl.key
+
+COPY docker/php/ssl/ssl.crt /etc/apache2/ssl/ssl.crt
+COPY docker/php/ssl/ssl.key /etc/apache2/ssl/ssl.key
+
+RUN mkdir -p /var/run/apache2/
 
 EXPOSE 80
 

@@ -12,6 +12,7 @@ services:
       - banana-api
     ports:
       - 80:80
+      - 443:443
 
   db:
     image: mariadb:10.5.6-focal
