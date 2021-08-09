@@ -2,6 +2,12 @@ var queue_glbl;
 var queue_current;
 var nextPlaying;
 
+if('serviceWorker' in navigator){
+	navigator.serviceWorker.register('/sw.js')
+	  .then(reg => console.log('service worker registered'))
+	  .catch(err => console.log('service worker not registered', err));
+  }
+
 
 function test(hey) {
 	console.log(hey);
@@ -40,6 +46,20 @@ function constructor() {
 			event.target.setAttribute('selected', '0');
 		}
 	}));
+
+	const currSongMoodDiv = document.querySelectorAll('.currSongMoodUnq');
+
+	currSongMoodDiv.forEach(el => el.addEventListener('click', event => {
+		console.log(event.target.getAttribute("data-el"));
+		if (event.target.getAttribute('selected') === '0') {
+			event.target.className += (' selectedCurrSongMood');
+			event.target.setAttribute('selected', '1');
+		} else {
+			event.target.classList.remove("selectedCurrSongMood");
+			event.target.setAttribute('selected', '0');
+		}
+	}));
+
 	playerCoverArt.addEventListener('dblclick', function (e) {
 		openInfo('currentSong');
 	});

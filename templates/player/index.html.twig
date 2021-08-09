@@ -54,7 +54,7 @@
 			<h3>Coming soon..</h3>
 		</div>
 
-		<h1 onclick="buildQueueQuery();hideShowPlaylistBuilder()" selected="1"><b style="color:#665775;-webkit-text-stroke: 1px black;font-style: italic;">🍌 Banana 🍌</b></h1>
+		<h1 onclick="buildQueueQuery();hideShowPlaylistBuilder()" style="z-index:99999999"><b style="color:#665775;-webkit-text-stroke: 1px black;font-style: italic;">🍌 Banana 🍌</b></h1>
 		<div class="builderToggleContainer" onclick="hideShowPlaylistBuilder();">
 			<a  id="buildertoggle" class="toggle on"><span></span></a>
 		</div>
@@ -68,10 +68,15 @@
 
 
 	<div id="player" class="player" onload="initPage()">
+		<div id="currSongMoodEditor">
+			{% for mood in moods %}
+				<span class="currSongMoodUnq" id="currSong-{mood}}" data-el="mood-{{mood}}" selected="0">{{mood}}</span>
+			{% endfor %}
+		</div>
 		<div id="playerMenu"></div>
 		<div class="songInfo">
 				<div id="coverArtContainer">
-					<img id="coverArt" src="">
+					<img id="coverArt" src="/favicon.ico">
 				</div>
 				<br>
 				<div id="currentTitleArtistContainer">
