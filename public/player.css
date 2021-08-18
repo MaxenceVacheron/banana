@@ -269,6 +269,7 @@
 		padding: 0.1em;
 		border-radius: 15px;
 		background-color: #576675;
+		text-align:center;
 	}
 
 	.selectedCurrSongMood{
@@ -335,7 +336,7 @@
 	}
 
 	.playingSong {
-		border: 2px var(--accentColor) solid;
+		background-color: var(--accentColor);
 	}
 
 	.iframemodal {

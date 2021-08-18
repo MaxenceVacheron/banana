@@ -123,6 +123,7 @@ class PlayerController extends AbstractController
 
 					$songsQueue[] =
 						[
+							'id' => $songLinkedtoMood->getId(),
 							'path' => substr($songLinkedtoMood->getPath(), 20),
 							// 'path' => $songLinkedtoMood->getPath(),
 							'title' => $songLinkedtoMood->getTitle(),
@@ -191,6 +192,7 @@ class PlayerController extends AbstractController
 
 					$songsQueue[] =
 						[
+							'id' => $songLinkedToArtist->getId(),
 							'path' => substr($songLinkedToArtist->getPath(), 20),
 							'title' => $songLinkedToArtist->getTitle(),
 							'artists' => $artistsArray,
@@ -242,6 +244,7 @@ class PlayerController extends AbstractController
 
 					$songsQueue[] =
 						[
+							'id' => $songLinkedtoAlbum->getId(),
 							'path' => substr($songLinkedtoAlbum->getPath(), 20),
 							// 'path' => $songLinkedtoAlbum->getPath(),
 							'title' => $songLinkedtoAlbum->getTitle(),
@@ -289,6 +292,7 @@ class PlayerController extends AbstractController
 
 					$songsQueue[] =
 						[
+							'id' => $_song->getId(),
 							'path' => substr($_song->getPath(), 20),
 							// 'path' => $songLinkedtoAlbum->getPath(),
 							'title' => $_song->getTitle(),

@@ -1,12 +1,13 @@
 var queue_glbl;
 var queue_current;
 var nextPlaying;
+var song;
 
-if('serviceWorker' in navigator){
+if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('/sw.js')
-	  .then(reg => console.log('service worker registered'))
-	  .catch(err => console.log('service worker not registered', err));
-  }
+		.then(reg => console.log('service worker registered'))
+		.catch(err => console.log('service worker not registered', err));
+}
 
 
 function test(hey) {
@@ -42,7 +43,6 @@ function constructor() {
 			event.target.setAttribute('selected', '1');
 		} else {
 			event.target.classList.remove("selectedFilter");
-
 			event.target.setAttribute('selected', '0');
 		}
 	}));
@@ -272,24 +272,95 @@ function playQueue(jsonQueue) {
 		ghostClass: 'sortable-ghost'
 	});
 
+
+	// startOverQueue();
 	playSong(0);
+
 
 }
 
-function playSong(Q_ID) {
+function startOverQueue() {
+	// if (document.querySelectorAll('.playingSong') != null) {
+	// 	document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
 
+	// }
+
+	firstElDataQ_ID = document.querySelectorAll('#queueContainerContent')[0].firstChild.getAttribute('data-q');
+	song = queue_glbl[firstElDataQ_ID];
+	// alert(song);
+
+	audioPlayer = document.getElementById('audioPlayer');
+	audioPlayer.setAttribute("src", song.path);
+
+	jsmediatags.read("http://" + location.hostname + "/" + song.path, {
+		onSuccess: function (tag) {
+			var tags = tag.tags;
+
+			var image = tags.picture;
+			if (image) {
+				var base64String = "";
+				for (var i = 0; i < image.data.length; i++) {
+					base64String += String.fromCharCode(image.data[i]);
+				}
+				var base64 = "data:image/jpeg;base64," +
+					// window.btoa(base64String);
+					btoa(base64String);
+				document.getElementById('coverArt').setAttribute('src', base64);
+			} else {
+				document.getElementById('coverArt').style.display = "none";
+			}
+		}
+	});
+
+	playerCurrentTitle.innerHTML = song.title;
+	playerCurrentArtist.innerHTML = song.artists.main;
+
+	var currentlyPlaying = document.querySelectorAll('[data-q="' + firstElDataQ_ID + '"]')[0];
+	console.log('currentlyPlaying :');
+	console.log(currentlyPlaying);
+
+	var nextPlaying = currentlyPlaying.nextSibling;
+	console.log('nextPlaying :');
+	console.log(nextPlaying);
+
+	currentlyPlaying.className += (' playingSong');
+
+	queue_current = firstElDataQ_ID;
+
+	currentSongMoodsArray = song.moods;
+	// alert(currentSongMoodsArray);
+	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
+	allcurrSongMoodUnq.forEach(el => {
+		el.classList.remove("selectedCurrSongMood");
+		el.setAttribute('selected', '0');
+	})
+	currentSongMoodsArray.forEach(el => {
+		target = document.getElementById('currSong-' + el);
+		target.className += (' selectedCurrSongMood');
+		target.setAttribute('selected', '1');
+	})
+
+	// info = callAPI(song.id);
+
+	playAudio();
+	console.log(song);
+}
+
+
+
+
+function playSong(Q_ID) {
 
 	console.log('Q CURRENT IS');
 	console.log(queue_current);
 
-	if (queue_current != undefined) {
-
-		queue_current_upped = queue_current + 1;
-		console.log('queue_current_upped');
-		console.log(queue_current_upped);
-		// document.querySelectorAll('#queueContainerContent > div:nth-child('+ queue_current_upped + ')')[0].classList.remove('playingSong');
-		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
+	console.log(document.querySelectorAll('.playingSong'));
+	if ((document.querySelectorAll('.playingSong') === undefined || document.querySelectorAll('.playingSong').length == 0)) {
+		startOverQueue();
+		return; // document.querySelectorAll('#queueContainerContent > div:nth-child('+ queue_current_upped + ')')[0].classList.remove('playingSong');
 	}
+	document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
+
 	// alert(Q_ID);
 
 	song = queue_glbl[Q_ID];
@@ -329,24 +400,61 @@ function playSong(Q_ID) {
 	console.log('nextPlaying :');
 	console.log(nextPlaying);
 
+
 	currentlyPlaying.className += (' playingSong');
 
 	queue_current = Q_ID;
 
+	currentSongMoodsArray = song.moods;
+	// alert(currentSongMoodsArray);
+	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
+	allcurrSongMoodUnq.forEach(el => {
+		el.classList.remove("selectedCurrSongMood");
+		el.setAttribute('selected', '0');
+	})
+	currentSongMoodsArray.forEach(el => {
+		target = document.getElementById('currSong-' + el);
+		target.className += (' selectedCurrSongMood');
+		target.setAttribute('selected', '1');
+	})
+
+	// info = callAPI(song.id);
+
 	playAudio();
+	console.log(song);
 }
 
 function nextSong() {
+	song.moods = [];
+	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
+	allcurrSongMoodUnq.forEach(elm => {
+		// el.classList.remove("selectedCurrSongMood");
+		if (elm.getAttribute('selected') == '1') {
+			song.moods.push(elm.dataset.el.substring(5));
+		}
+	})
+
+	console.log('moods saved for the song are:' + song.moods);
+
 	// currentQ_Id = document.querySelectorAll('.playingSong')[0].getAttribute('data-q');
 	// console.log(currentQ_Id);
 
 
 	var currentlyPlaying = document.querySelectorAll('.playingSong')[0];
 
-	nextPlayingDataQID = currentlyPlaying.nextSibling.getAttribute('data-q');
+	// nextPlayingDataQID = currentlyPlaying.nextSibling.getAttribute('data-q');
 
 	// alert(nextPlayingDataQID);
-	playSong(nextPlayingDataQID);
+	// playSong(nextPlayingDataQID);
+
+	if (currentlyPlaying.nextSibling != null) {
+		// if (nextPlaying != null) {
+		playSong(currentlyPlaying.nextSibling.getAttribute('data-q'));
+	} else {
+		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
+
+		startOverQueue();
+	}
 }
 
 function playAudio() {
@@ -387,9 +495,54 @@ function closeInfo() {
 
 }
 
-function hideElementsByClass(className) {
-	var elements = document.getElementsByClassName(className);
-	while (elements.length > 0) {
-		elements[0].parentNode.removeChild(elements[0]);
+function updateMood(currSongMoodUpdatedAppended) {
+
+	// alert(song.id);
+	previousSeletecState = currSongMoodUpdatedAppended.getAttribute('selected');
+
+
+	if (previousSeletecState == '0') {
+		// alert(currSongMoodUpdated.getAttribute("data-el"));
+		currSongMoodUpdated = currSongMoodUpdatedAppended.dataset.el.substring(5);
+		currSongMoodUpdatedClean = currSongMoodUpdated.replace(/\s/g, '+');
+		currSongMoodUpdatedClean = currSongMoodUpdated.replace(/[&]/g, '%26');
+		// console.log(currSongMoodUpdated);
+		request = '/info/link/mood?';
+		request += 'id=' + song.id + '&mood=' + currSongMoodUpdated;
+
+		const xhttp = new XMLHttpRequest();
+		xhttp.onload = function () {
+			//   document.getElementById("demo").innerHTML =
+			//   this.responseText;
+			console.log(this.responseText);
+			console.log(currSongMoodUpdated + ' added to song');
+		}
+
+		xhttp.open("GET", request);
+		xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+		xhttp.send();
+
+	} else {
+		currSongMoodUpdated = currSongMoodUpdatedAppended.dataset.el.substring(5);
+		currSongMoodUpdatedClean = currSongMoodUpdated.replace(/\s/g, '+');
+		currSongMoodUpdatedClean = currSongMoodUpdated.replace(/[&]/g, '%26');
+		// console.log(currSongMoodUpdated);
+		request = '/info/unlink/mood?';
+		request += 'id=' + song.id + '&mood=' + currSongMoodUpdated;
+
+		const xhttp = new XMLHttpRequest();
+		xhttp.onload = function () {
+			//   document.getElementById("demo").innerHTML =
+			//   this.responseText;
+			console.log(this.responseText);
+			console.log(currSongMoodUpdated + ' removed from song');
+		}
+
+		xhttp.open("GET", request);
+		xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+		xhttp.send();
 	}
+
 }

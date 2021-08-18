@@ -70,7 +70,7 @@
 	<div id="player" class="player" onload="initPage()">
 		<div id="currSongMoodEditor">
 			{% for mood in moods %}
-				<span class="currSongMoodUnq" id="currSong-{mood}}" data-el="mood-{{mood}}" selected="0">{{mood}}</span>
+				<span class="currSongMoodUnq" id="currSong-{{mood}}" data-el="mood-{{mood}}" onclick="updateMood(this)" selected="0">{{mood}}</span>
 			{% endfor %}
 		</div>
 		<div id="playerMenu"></div>
