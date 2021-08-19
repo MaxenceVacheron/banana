@@ -16,6 +16,8 @@
 		-ms-transition: all 0.2s ease;
 		-o-transition: all 0.2s ease;
 		transition: all 0.2s ease;
+		-webkit-tap-highlight-color: rgba(0,0,0,0);
+
 	}
 
 	body {
@@ -256,6 +258,7 @@
 		flex-wrap: wrap;
 		overflow-y: scroll;
 		max-height: 25vh;
+		justify-content: space-evenly;
 	}
 
 	#currSongMoodEditor::-webkit-scrollbar {
@@ -263,7 +266,7 @@
 	      }
 
 	.currSongMoodUnq{
-		flex: 1 1 auto;
+		/* flex: 1 1 auto; */
 		font-size: x-large;
 		margin: 0.1em;
 		padding: 0.1em;
@@ -290,8 +293,8 @@
 	}
 
 	#coverArt {
-		width: 45vh;
-		height: 45vh;
+		width: 35vh;
+		height: 35vh;
 		object-fit:cover;
 
 	}
@@ -304,7 +307,7 @@
 
 	#playerBar {
 		min-height: 2px;
-		border: 1px solid green;
+		/* border: 1px solid green; */
 		margin: 10px 10px 10px 10px;
 
 	}
@@ -373,18 +376,23 @@
 		background-color: var(--secondaryColor);
 		/* border: 1px gold; */
 		display: none;
-		height: 50vh;
-		width: 88vw;
 		position: absolute;
 		float: left;
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
+		/* height: 85vh; */
+		min-width: 75vw;
 		z-index: 99999;
 	}
 
-	.edit-info {
-		display: block;
+	#infoCreateForm {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex-wrap: nowrap;
+		/* border : 5vh solid var(--accentColor); */
+
 	}
 
 	.moods-container {
@@ -450,4 +458,117 @@
 		opacity: 0;
 	}
 
-	/* END INFO EDIT */
+	.form__group {
+		position: relative;
+		padding: 15px 0 0;
+		margin-top: 10px;
+		width: 90%;
+	  }
+	  
+	  .form__field {
+		font-family: inherit;
+		width: 100%;
+		border: 0;
+		border-bottom: 2px solid #9b9b9b;
+		outline: 0;
+		font-size: 1.3rem;
+		color: #fff;
+		padding: 7px 0;
+		background: transparent;
+		transition: border-color 0.2s;
+	  }
+	  .form__field::placeholder {
+		color: transparent;
+	  }
+	  .form__field:placeholder-shown ~ .form__label {
+		font-size: 1.3rem;
+		cursor: text;
+		top: 20px;
+	  }
+	  
+	  .form__label {
+		position: absolute;
+		top: 0;
+		display: block;
+		transition: 0.2s;
+		font-size: 1rem;
+		color: #9b9b9b;
+	  }
+	  
+	  .form__field:focus {
+		padding-bottom: 6px;
+		font-weight: 700;
+		border-width: 3px;
+		border-image: linear-gradient(to right, #11998e, #38ef7d);
+		border-image-slice: 1;
+	  }
+	  .form__field:focus ~ .form__label {
+		position: absolute;
+		top: 0;
+		display: block;
+		transition: 0.2s;
+		font-size: 1rem;
+		color: #11998e;
+		font-weight: 700;
+	  }
+	  
+	  /* reset input */
+	  .form__field:required, .form__field:invalid {
+		box-shadow: none;
+	  }
+	  
+	  /* demo */
+	  /* body {
+		font-family: "Poppins", sans-serif;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+		font-size: 1.5rem;
+		background-color: #222222;
+	  } */
+
+/* The value content-box tells the div to place any border on the outside, increasing the width or height. If we change this value to border-box, the border is added to the inside of the box. */
+.playbutton {
+	box-sizing: border-box;
+	width: 0;
+	height: 74px;
+	border-style: solid;
+	border-width: 37px 0 37px 60px;
+	border-color: transparent transparent transparent #202020;
+	cursor: pointer;
+	will-change: border-width;
+	transition: all 0.2s ease;
+  }
+  .playbutton.playing {
+	border-style: double;
+	border-width: 0px 0 0px 60px;
+  }
+  .playbutton:hover {
+	border-color: transparent transparent transparent #404040;
+  }
+
+  .arrow {
+	position: relative;
+	display: inline-block;
+	margin: 20px;
+	padding: 25px;
+	box-shadow: 15px -15px 0 0 #202020 inset;
+  }
+  .arrow--left {
+	transform: rotate(45deg);
+	left: 25px;
+  }
+  .arrow--right {
+	transform: rotate(225deg);
+	right: 25px;
+  }
+  .arrow--up {
+	transform: rotate(135deg);
+	top: 25px;
+  }
+  .arrow--down {
+	transform: rotate(-45deg);
+	bottom: 25px;
+  }

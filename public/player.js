@@ -3,11 +3,11 @@ var queue_current;
 var nextPlaying;
 var song;
 
-if ('serviceWorker' in navigator) {
-	navigator.serviceWorker.register('/sw.js')
-		.then(reg => console.log('service worker registered'))
-		.catch(err => console.log('service worker not registered', err));
-}
+// if ('serviceWorker' in navigator) {
+// 	navigator.serviceWorker.register('/sw.js')
+// 		.then(reg => console.log('service worker registered'))
+// 		.catch(err => console.log('service worker not registered', err));
+// }
 
 
 function test(hey) {
@@ -21,6 +21,7 @@ function initPage() {
 		document.getElementById('playlistBuilder').classList.remove('hiddenWhileLoad');
 		document.getElementById('queueContainer').classList.remove('hiddenWhileLoad');
 		constructor();
+		editInfoConstructor();
 	}, delayInMilliseconds);
 
 }
@@ -29,7 +30,6 @@ function constructor() {
 	const player = document.getElementById('player');
 	const playerCurrentTitle = document.getElementById('currentTitle');
 	const playerCurrentArtist = document.getElementById('currentArtist');
-	const playerCoverArt = document.getElementById('coverArt');
 
 	const divs = document.querySelectorAll('.builderFilter');
 
@@ -60,9 +60,42 @@ function constructor() {
 		}
 	}));
 
+	console.log('Form submit will be intercepted.');
+
+	const playerCoverArt = document.getElementById('coverArt');
 	playerCoverArt.addEventListener('dblclick', function (e) {
-		openInfo('currentSong');
+		openInfo();
+		getInfo();
 	});
+
+	const SubmitInfoForm = document.getElementById('infoCreateForm');
+	SubmitInfoForm.addEventListener("submit", function (e) {
+		e.preventDefault(); // before the code
+		/* do what you want with the form */
+		artists = document.getElementsByClassName('artistInput');
+		artists = Array.from(artists);
+
+		artists.forEach(element => {
+			var artistNameInput = element.querySelector("input");
+			var artistTypeSelect = element.querySelector("select").value;
+			var newName = '';
+			newName = artistNameInput.getAttribute('name');
+			console.log('old name was' + newName);
+			newName = newName.replace('CHANGEME', artistTypeSelect);
+			artistNameInput.setAttribute('name', newName);
+		});
+		// Should be triggered on form submit
+		console.log('hi form is submited');
+		document.getElementById('infoCreateForm').submit();
+
+	});
+
+	// const playButton = document.getElementById('playPauseButton');
+
+	// playButton.addEventListener('click', event => {
+	// 	toggleClass(playButton, 'paused');
+	// })
+
 }
 
 function humanReadable(string) {
@@ -313,6 +346,7 @@ function startOverQueue() {
 	});
 
 	playerCurrentTitle.innerHTML = song.title;
+	document.title = song.artists.main + ' - ' + song.title;
 	playerCurrentArtist.innerHTML = song.artists.main;
 
 	var currentlyPlaying = document.querySelectorAll('[data-q="' + firstElDataQ_ID + '"]')[0];
@@ -369,6 +403,11 @@ function playSong(Q_ID) {
 	audioPlayer = document.getElementById('audioPlayer');
 	audioPlayer.setAttribute("src", song.path);
 
+
+	audioPlayer.addEventListener('ended', (event) => {
+		nextSong();
+});
+
 	jsmediatags.read("http://" + location.hostname + "/" + song.path, {
 		onSuccess: function (tag) {
 			var tags = tag.tags;
@@ -390,6 +429,8 @@ function playSong(Q_ID) {
 	});
 
 	playerCurrentTitle.innerHTML = song.title;
+	document.title = song.artists.main + ' - ' + song.title;
+
 	playerCurrentArtist.innerHTML = song.artists.main;
 
 	var currentlyPlaying = document.querySelectorAll('[data-q="' + Q_ID + '"]')[0];
@@ -418,7 +459,6 @@ function playSong(Q_ID) {
 		target.setAttribute('selected', '1');
 	})
 
-	// info = callAPI(song.id);
 
 	playAudio();
 	console.log(song);
@@ -434,22 +474,35 @@ function nextSong() {
 		}
 	})
 
-	console.log('moods saved for the song are:' + song.moods);
-
-	// currentQ_Id = document.querySelectorAll('.playingSong')[0].getAttribute('data-q');
-	// console.log(currentQ_Id);
-
+	// console.log('moods saved for the song are:' + song.moods);
 
 	var currentlyPlaying = document.querySelectorAll('.playingSong')[0];
 
-	// nextPlayingDataQID = currentlyPlaying.nextSibling.getAttribute('data-q');
-
-	// alert(nextPlayingDataQID);
-	// playSong(nextPlayingDataQID);
-
 	if (currentlyPlaying.nextSibling != null) {
-		// if (nextPlaying != null) {
 		playSong(currentlyPlaying.nextSibling.getAttribute('data-q'));
+	} else {
+		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
+
+		startOverQueue();
+	}
+}
+
+function previousSong() {
+	song.moods = [];
+	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
+	allcurrSongMoodUnq.forEach(elm => {
+		// el.classList.remove("selectedCurrSongMood");
+		if (elm.getAttribute('selected') == '1') {
+			song.moods.push(elm.dataset.el.substring(5));
+		}
+	})
+
+	// console.log('moods saved for the song are:' + song.moods);
+
+	var currentlyPlaying = document.querySelectorAll('.playingSong')[0];
+
+	if (currentlyPlaying.previousSibling != null) {
+		playSong(currentlyPlaying.previousSibling.getAttribute('data-q'));
 	} else {
 		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
 
@@ -463,27 +516,30 @@ function playAudio() {
 	audioPlayer.play();
 
 	playPauseButton = document.getElementById('playPauseButton');
-	playPauseButton.setAttribute("onClick", "javascript: pauseAudio();");
-	playPauseButton.innerHTML = "Pause";
+	playPauseButton.setAttribute("onClick", "javascript : pauseAudio();");
+	// playPauseButton.innerHTML = "Pause";
+
+	addClass(document.getElementById('playPauseButton'), 'playing');
+
 
 }
 
 function pauseAudio() {
+	// removeClass(document.getElementById('playPauseButton'), 'playing');
+	
 	console.log('Pause button pressed');
 	audioPlayer = document.getElementById('audioPlayer');
 	audioPlayer.pause();
 
 	playPauseButton = document.getElementById('playPauseButton');
-	playPauseButton.innerHTML = "Play";
+	// playPauseButton.innerHTML = "Play";
 	playPauseButton.setAttribute("onClick", "javascript: playAudio();");
+	removeClass(document.getElementById('playPauseButton'), 'playing');
 
 }
 
-function openInfo(songID) {
-	// url = 'http://' + location.hostname + '/AAA/sendcreatedata.html';
-	// html = '';
-	// html += '<div class="modalExtBackground modal" onclick="closeInfo()"></div><iframe class="iframemodal modal" height="100" id="infoEditFrame" src="/AAA/sendcreatedata.html"></iframe>';
-	// document.body.innerHTML += html;
+function openInfo() {
+
 	document.getElementById('editInfoContainer').style.display = 'block';
 	document.getElementById('modalExtBackground').style.display = 'block';
 }

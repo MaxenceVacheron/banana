@@ -54,7 +54,7 @@
 			<h3>Coming soon..</h3>
 		</div>
 
-		<h1 onclick="buildQueueQuery();hideShowPlaylistBuilder()" style="z-index:99999999"><b style="color:#665775;-webkit-text-stroke: 1px black;font-style: italic;">🍌 Banana 🍌</b></h1>
+		<h1 onclick="buildQueueQuery();hideShowPlaylistBuilder()" style="z-index:99999999"><b style="color:#665775;-webkit-text-stroke: 1px black;font-style: italic;">🍌 Play songs 🍌</b></h1>
 		<div class="builderToggleContainer" onclick="hideShowPlaylistBuilder();">
 			<a  id="buildertoggle" class="toggle on"><span></span></a>
 		</div>
@@ -86,9 +86,10 @@
 		</div>
 		<div id="playerBar"></div>
 		<div class="playerControlContainer">
-			<div id="previousButton">Previous</div>
-			<div id="playPauseButton" onclick="playAudio();">Play/Pause</div>
-			<div id="nextButton" onclick="nextSong()">Next</div>
+			<div id="previousButton" onclick="previousSong()" class="arrow arrow--left"></div>
+
+			<div class="playbutton" id="playPauseButton" onclick="playAudio();"></div>
+			<div id="nextButton" onclick="nextSong()" class="arrow arrow--right"></div>
 		</div>
 	</div>
 	<div id="queueContainer"  class="queueContainer queueContainerHidden hiddenWhileLoad" selected="0">
@@ -102,25 +103,27 @@
 <div id="html5audio">
     <audio id="audioPlayer"
         controls
-        src="AutomaticallyAddedToBanana/Alpha%20Wann%20&%20Népal%20-%20De%200%20à%20100-3cIObgePakE.mp3">
+        src="">
     </audio>
 </div>
 <div class="modalExtBackground modal" id="modalExtBackground" onclick="closeInfo()"></div>
 <div class="editInfoContainer modal" id="editInfoContainer">
-		<div id="getInfoSongIDContainer">
-			<input type="text" id="inputsongid" name="inputname" value="1" autocomplete="off">
-			<button id="getInfo" onclick="getInfo()">Get Info</button>
-		</div>
-		<hr>
 		<form id="infoCreateForm" action="/info/create" method="GET">
 			<div class="edit-info" style="z-index: 999;">
-				<input type="number" id="songID" name="id" value="1" readonly>
+				<div class="form__group field">
+					<input type="number" id="songID" class="form__field" name="id" placeholder="ID" readonly required>
+					<label for="id" class="form__label">ID</label>
+				</div>
+				<div class="form__group field">
+					<input type="number" id="songYear" class="form__field" placeholder="Year" name="year" value="Year" required>
+					<label for="year" class="form__label">Year</label>
+				</div>
 				<br>
-				<input type="text" id="songYear" name="year" value="songYear">
-				<br>
-				<input type="text" id="songName" name="title" value="songName">
-				<div id="artistInput"></div>
-				<ul id="moodul" class="ks-cboxtags moods-container"></ul>
+				<div class="form__group field">
+					<input type="text" id="songName" class="form__field" placeholder="Title" name="title" value="songName" required>
+					<label for="title" class="form__label">Year</label>
+				</div>
+				<div id="artistInputContainer"></div>
 			</div>
 			<input type="submit" value="Update">
 

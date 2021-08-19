@@ -192,35 +192,57 @@ class DataController extends AbstractController
         // dd(array_keys($songArtistsArray)); // main, feat, sample, og, back...
 
         $submitedTypesOfArtists = array_keys($songArtistsArray);
+        $status = [];
+        $test = [];
+
+        $songArtistAndTypeExistingRelation = [];
+        $alreadyExistingArtistRelations = $newSong->getSongHasArtists();
+
+        foreach ($alreadyExistingArtistRelations as $index => $alreadyExistingArtistRelationUnq) {
+            $relationType = $alreadyExistingArtistRelationUnq->getArtistType()->getName();
+            $songArtistAndTypeExistingRelation[$relationType][] = $alreadyExistingArtistRelationUnq->getArtist()->getName();
+        }
+        // dd($songArtistAndTypeExistingRelation); // main =>AlphaWann, NEpan ; sample=>Drake....
+
 
         foreach ($submitedTypesOfArtists as $submitedTypeOfArtists) {
             foreach ($songArtistsArray[$submitedTypeOfArtists] as $artist) {
 
+                $ifTypeExist = array_key_exists($submitedTypeOfArtists, $songArtistAndTypeExistingRelation);
+                //return true if there an artist of that type
 
-                $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
-                $addedType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
-                $alreadyExistingArtistRelations = $newSong->getSongHasArtists();
-                foreach ($alreadyExistingArtistRelations as $alreadyExistingArtistRelationUnq) {
-                    $unqExistingRelationArtist = $alreadyExistingArtistRelationUnq->getArtist()->getName();
-                    $unqExistingRelationArtistType = $alreadyExistingArtistRelationUnq->getArtistType()->getName();
-                    // dd($unqExistingRelationArtistType);
-                    // dd($unqExistingRelationArtist);
-                    if (!($unqExistingRelationArtist = $addedSongArtist && $unqExistingRelationArtistType = $addedType)) {
-                        //if if not hte same relation (ie same artist with same artist type (ex: JJ is main and prod))
+                if ($ifTypeExist) {
+                    $ifArtistTypeAlreadyTagged = in_array($artist, $songArtistAndTypeExistingRelation[$submitedTypeOfArtists]);
+                    if ($ifArtistTypeAlreadyTagged == false) {
+
+                        $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
+                        $addedSongArtistType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
                         $songArtistRelation = new SongHasArtist();
                         $songArtistRelation->setSong($newSong)
                             ->setArtist($addedSongArtist)
-                            ->setArtistType($addedType);
+                            ->setArtistType($addedSongArtistType);
                         $this->em->persist($songArtistRelation);
-                        $status = [];
-                        $status[] = 'OK';
+
+                        $status[] = "OK : " . $artist . ' - ' . $submitedTypeOfArtists;
+                        // break;
                     } else {
-                        $status = [];
-                        $status = '{Error : Artist & type already exist for this song}';
+                        $status[] = "Error : " . $artist . ' - ' . $submitedTypeOfArtists;
+                        // break;
                     }
+                } else {
+                    $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
+                    $addedSongArtistType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
+                    $songArtistRelation = new SongHasArtist();
+                    $songArtistRelation->setSong($newSong)
+                        ->setArtist($addedSongArtist)
+                        ->setArtistType($addedSongArtistType);
+                    $this->em->persist($songArtistRelation);
+                    $status[] = "New Type of Artist for this song OK : " . $artist . ' - ' . $submitedTypeOfArtists;
+
                 }
             }
         }
+
 
         $this->em->persist($newSong);
         $this->em->flush();
@@ -296,13 +318,13 @@ class DataController extends AbstractController
         }
 
         // CREATE MOOD ENTITY FOR UNRECCOGNIZED MOODS
-            if (!in_array($songMoods, $allMoodsNames)) {
-                // dd($songMood);
-                $newAddedMood = new Mood();
-                $newAddedMood->setName($songMoods);
-                $this->em->persist($newAddedMood);
-                $this->em->flush();
-            }
+        if (!in_array($songMoods, $allMoodsNames)) {
+            // dd($songMood);
+            $newAddedMood = new Mood();
+            $newAddedMood->setName($songMoods);
+            $this->em->persist($newAddedMood);
+            $this->em->flush();
+        }
 
         // // GET ALL TYPE OF ARTIST IN DB
         // $artistTypeRepo = $this->em->getRepository(ArtistType::class);
@@ -337,8 +359,8 @@ class DataController extends AbstractController
         //     ->setYear($songYear);
 
         // LINKING SONG TO MOOD
-            $addedMood = $moodRepo->findOneBy(['name' => $songMoods]);
-            $newSong->addMood($addedMood);
+        $addedMood = $moodRepo->findOneBy(['name' => $songMoods]);
+        $newSong->addMood($addedMood);
 
         // // LINKING SONG TO ARTIST
         // foreach ($songArtistsArray as $typeArrayOfArtist) {
@@ -371,8 +393,8 @@ class DataController extends AbstractController
         //                     ->setArtist($addedSongArtist)
         //                     ->setArtistType($addedType);
         //                 $this->em->persist($songArtistRelation);
-                        $status = [];
-                        $status[] = 'OK';
+        $status = [];
+        $status[] = 'OK';
         //             } else {
         //                 $status = [];
         //                 $status = '{Error : Artist & type already exist for this song}';
@@ -390,7 +412,7 @@ class DataController extends AbstractController
         return $response;
     }
 
-        /**
+    /**
      * @Route("/info/unlink/mood", name="remMood", methods={"GET", "POST"})
      */
     public function remMoodLink(Request $request)
@@ -422,13 +444,13 @@ class DataController extends AbstractController
         }
 
         // CREATE MOOD ENTITY FOR UNRECCOGNIZED MOODS
-            if (!in_array($songMoods, $allMoodsNames)) {
-                // dd($songMood);
-                $newAddedMood = new Mood();
-                $newAddedMood->setName($songMoods);
-                $this->em->persist($newAddedMood);
-                $this->em->flush();
-            }
+        if (!in_array($songMoods, $allMoodsNames)) {
+            // dd($songMood);
+            $newAddedMood = new Mood();
+            $newAddedMood->setName($songMoods);
+            $this->em->persist($newAddedMood);
+            $this->em->flush();
+        }
 
         // // GET ALL TYPE OF ARTIST IN DB
         // $artistTypeRepo = $this->em->getRepository(ArtistType::class);
@@ -463,8 +485,8 @@ class DataController extends AbstractController
         //     ->setYear($songYear);
 
         // LINKING SONG TO MOOD
-            $addedMood = $moodRepo->findOneBy(['name' => $songMoods]);
-            $newSong->removeMood($addedMood);
+        $addedMood = $moodRepo->findOneBy(['name' => $songMoods]);
+        $newSong->removeMood($addedMood);
 
         // // LINKING SONG TO ARTIST
         // foreach ($songArtistsArray as $typeArrayOfArtist) {
@@ -497,8 +519,8 @@ class DataController extends AbstractController
         //                     ->setArtist($addedSongArtist)
         //                     ->setArtistType($addedType);
         //                 $this->em->persist($songArtistRelation);
-                        $status = [];
-                        $status[] = 'OK';
+        $status = [];
+        $status[] = 'OK';
         //             } else {
         //                 $status = [];
         //                 $status = '{Error : Artist & type already exist for this song}';
@@ -515,5 +537,4 @@ class DataController extends AbstractController
         $response->headers->set('Content-Type', 'application/json');
         return $response;
     }
-
 }
