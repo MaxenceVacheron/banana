@@ -305,7 +305,7 @@
 	#coverArtContainer {
 		display: flex;
 		justify-content: center;
-		
+		min-height: 35vh;
 
 	}
 
@@ -341,7 +341,12 @@
 	}
 
 	#html5audio {
-		display: none;
+		display: block;
+		position: absolute;
+		float: left;
+		left: 50%;
+		top: 60%;
+		transform: translate(-50%, -50%)
 	}
 
 	.queue_song {

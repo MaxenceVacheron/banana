@@ -59,8 +59,6 @@ function constructor() {
 		}
 	}));
 
-	console.log('Form submit will be intercepted.');
-
 	const playerCoverArt = document.getElementById('coverArt');
 	playerCoverArt.addEventListener('dblclick', function (e) {
 		openInfo();
@@ -279,25 +277,6 @@ function playQueue(jsonQueue) {
 
 	queueCont.innerHTML = html;
 
-
-	// var q_el = document.querySelectorAll('[data-q]');
-
-
-
-	// q_el.forEach(el => el.addEventListener('click', event => {
-	// 	q_id = event.target.getAttribute('q_id');
-	// 	// console.log(event.target.getAttribute('q_id'));
-	// 	console.log(event.target.dataset.q);
-
-	// 		if (event.target.getAttribute('playing') === '0' ) {
-	// 			event.target.className += (' playingSong');
-	// 			event.target.setAttribute('playing','1');
-	// 		} else {
-	// 			event.target.classList.remove("playingSong");
-	// 			event.target.setAttribute('playing','0');
-	// 		}
-	// }));
-
 	new Sortable(queueContainerContent, {
 		handle: '.handle',
 		animation: 150,
@@ -312,14 +291,10 @@ function playQueue(jsonQueue) {
 }
 
 function startOverQueue() {
-	// if (document.querySelectorAll('.playingSong') != null) {
-	// 	document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
-
-	// }
+	// alert('Q start over');
 
 	firstElDataQ_ID = document.querySelectorAll('#queueContainerContent')[0].firstChild.getAttribute('data-q');
 	song = queue_glbl[firstElDataQ_ID];
-	// alert(song);
 
 	audioPlayer = document.getElementById('audioPlayer');
 	audioPlayer.setAttribute("src", song.path);
@@ -339,7 +314,7 @@ function startOverQueue() {
 					btoa(base64String);
 				document.getElementById('coverArt').setAttribute('src', base64);
 			} else {
-				document.getElementById('coverArt').style.display = "none";
+				document.getElementById('coverArt').setAttribute('src', '/favicon.ico');
 			}
 		}
 	});
@@ -349,19 +324,17 @@ function startOverQueue() {
 	playerCurrentArtist.innerHTML = song.artists.main;
 
 	var currentlyPlaying = document.querySelectorAll('[data-q="' + firstElDataQ_ID + '"]')[0];
-	// console.log('currentlyPlaying :');
-	// console.log(currentlyPlaying);
-
-	var nextPlaying = currentlyPlaying.nextSibling;
-	// console.log('nextPlaying :');
-	// console.log(nextPlaying);
-
 	currentlyPlaying.className += (' playingSong');
+
+	audioPlayer.addEventListener('ended', (event) => {
+		console.log('Song ended. Playing Next Song');
+		nextSong();
+	});
 
 	queue_current = firstElDataQ_ID;
 
 	currentSongMoodsArray = song.moods;
-	// alert(currentSongMoodsArray);
+
 	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
 	allcurrSongMoodUnq.forEach(el => {
 		el.classList.remove("selectedCurrSongMood");
@@ -373,13 +346,11 @@ function startOverQueue() {
 		target.setAttribute('selected', '1');
 	})
 
-	// info = callAPI(song.id);
 
 	playAudio();
 	console.log(song);
 
 	setTimeout(function () {
-		setColorPaletteHere = null;
 		setColorPalette();
 
 	}, 50);
@@ -390,17 +361,21 @@ function startOverQueue() {
 
 function playSong(Q_ID) {
 
-	console.log('Q CURRENT IS');
-	console.log(queue_current);
+
+	// console.log(queue_current);
 
 	console.log(document.querySelectorAll('.playingSong'));
-	if ((document.querySelectorAll('.playingSong') === undefined || document.querySelectorAll('.playingSong').length == 0)) {
-		startOverQueue();
-		return; // document.querySelectorAll('#queueContainerContent > div:nth-child('+ queue_current_upped + ')')[0].classList.remove('playingSong');
-	}
-	document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
 
-	// alert(Q_ID);
+	// Condition met when first song is played on the page
+	if ((document.querySelectorAll('.playingSong') === undefined || document.querySelectorAll('.playingSong').length == 0)) {
+		// startOverQueue();
+		Q_ID = document.querySelectorAll('#queueContainerContent')[0].firstChild.getAttribute('data-q');
+		// return; // document.querySelectorAll('#queueContainerContent > div:nth-child('+ queue_current_upped + ')')[0].classList.remove('playingSong');
+	} else {
+		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
+// 
+	}
+
 
 	song = queue_glbl[Q_ID];
 	// alert(song);
@@ -410,6 +385,7 @@ function playSong(Q_ID) {
 
 
 	audioPlayer.addEventListener('ended', (event) => {
+		console.log('Song ended. Playing Next Song');
 		nextSong();
 	});
 
@@ -429,12 +405,11 @@ function playSong(Q_ID) {
 				document.getElementById('coverArt').setAttribute('src', base64);
 
 				setTimeout(function () {
-					setColorPaletteHere = null;
-					setColorPalette();
+					// setColorPalette();
 				}, 50);
 
 			} else {
-				document.getElementById('coverArt').style.display = "none";
+				document.getElementById('coverArt').setAttribute('src', '/favicon.ico');
 			}
 		}
 	});
@@ -445,20 +420,12 @@ function playSong(Q_ID) {
 	playerCurrentArtist.innerHTML = song.artists.main;
 
 	var currentlyPlaying = document.querySelectorAll('[data-q="' + Q_ID + '"]')[0];
-	console.log('currentlyPlaying :');
-	console.log(currentlyPlaying);
-
-	var nextPlaying = currentlyPlaying.nextSibling;
-	console.log('nextPlaying :');
-	console.log(nextPlaying);
-
-
 	currentlyPlaying.className += (' playingSong');
 
 	queue_current = Q_ID;
 
 	currentSongMoodsArray = song.moods;
-	// alert(currentSongMoodsArray);
+
 	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
 	allcurrSongMoodUnq.forEach(el => {
 		el.classList.remove("selectedCurrSongMood");
@@ -474,9 +441,10 @@ function playSong(Q_ID) {
 	playAudio();
 	console.log(song);
 
+	setTimeout(function () {
+		setColorPalette();
 
-	setColorPalette();
-
+	}, 50);
 
 }
 
@@ -498,8 +466,8 @@ function nextSong() {
 		playSong(currentlyPlaying.nextSibling.getAttribute('data-q'));
 	} else {
 		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
-
-		startOverQueue();
+		// startOverQueue();
+		playSong();
 	}
 }
 
@@ -522,7 +490,8 @@ function previousSong() {
 	} else {
 		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
 
-		startOverQueue();
+		// startOverQueue();
+		playSong();
 	}
 }
 
@@ -623,16 +592,16 @@ function setColorPalette() {
 	const colorThief = new ColorThief();
 	const img = document.getElementById('coverArt');
 
-	// Make sure image is finished loading
-	if (img.complete) {
-		color = colorThief.getColor(img);
-	} else {
-		image.addEventListener('load', function () {
-			color = colorThief.getColor(img);
-		});
-	}
+	// // Make sure image is finished loading
+	// if (img.complete) {
+	// 	color = colorThief.getColor(img);
+	// } else {
+	// 	image.addEventListener('load', function () {
+	// 		color = colorThief.getColor(img);
+	// 	});
+	// }
 
-	document.body.style.backgroundColor = "rgb(" + color + ")";
+	// document.body.style.backgroundColor = "rgb(" + color + ")";
 
 
 
@@ -659,6 +628,10 @@ function setColorPalette() {
 			palette.appendChild(swatch);
 			return palette;
 		}, palette)
+		color = colorThief.getColor(img);
+		document.body.style.backgroundColor = "rgb(" + color + ")";
+
+		
 	}
 
 }
