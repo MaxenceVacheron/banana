@@ -27,11 +27,28 @@
 		overflow: hidden;
 		transition: all 0.5s ease;
 
-		--primaryColor: #665775;
+		/* --primaryColor: #665775;
 		--secondaryColor: #576675;
+		--accentColor: #667557;		 */
+		--primaryColor: #000000;
+		--secondaryColor: #ffffff;
 		--accentColor: #667557;
 		background-color: var(--primaryColor);
 	}
+
+
+.palette > div {
+	width: 20px;
+	height: 20px;
+	background-color: var(--color);
+	margin: 2px;
+  }
+  .palette > div::after {
+	content: attr(color);
+	font-family: monospace;
+	margin-left: 24px;
+	white-space: nowrap;
+  }
 
 	.playlistBuilder {
 		background-color: #576675;
@@ -374,6 +391,7 @@
 
 	.editInfoContainer {
 		background-color: var(--secondaryColor);
+		border-radius: 10%;
 		/* border: 1px gold; */
 		display: none;
 		position: absolute;
@@ -382,8 +400,24 @@
 		top: 50%;
 		transform: translate(-50%, -50%);
 		/* height: 85vh; */
-		min-width: 75vw;
+		min-width: 92vw;
+		min-height: 50vh;
 		z-index: 99999;
+	}
+	.formContainer {
+		display: flex;
+		position: absolute;
+		float: left;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		flex-flow: column nowrap;
+		justify-content: space-evenly;
+		min-width: 95%;
+	}
+
+	.edit-info {
+		width: 90%;
 	}
 
 	#infoCreateForm {

@@ -15,6 +15,15 @@ function getMoodsAndArtistTypes() {
 	xmlHttp.open("GET", theUrl, false); // false for synchronous request
 	xmlHttp.send(null);
 	return JSON.parse(xmlHttp.responseText);
+
+	// var xmlHttp = new XMLHttpRequest();
+	// xmlHttp.onreadystatechange = function () {
+	// 	if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+	// 		return JSON.parse(xmlHttp.responseText);
+	// }
+	// xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+	// xmlHttp.send(null);
+
 }
 
 function callAPI(songID) {

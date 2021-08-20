@@ -27,7 +27,7 @@
 
 		</style>
 		{# Run `composer require symfony/webpack-encore-bundle`
-				           and uncomment the following Encore helpers to start using Symfony UX #}
+						           and uncomment the following Encore helpers to start using Symfony UX #}
 		{% block stylesheets %}
 			{#{{ encore_entry_link_tags('app') }}#}
 		{% endblock %}
@@ -43,13 +43,12 @@
 				<span id='menu'></span>
 				<a href='/' class='link' id='homeLink'>Home</a>
 				<a href='/import/' class='link' id='importLink'>Import Songs</a>
-				<a href='/library' class='link' id='musicLink'>Library</a>
+				<a class='link' id='musicLink'>Library</a>
 				<a href='/player' class='link' id='playerLink'>Player</a>
 
 			</span>
 		</header>
 		{% block body %}{% endblock %}
-
 
 
 	</body>

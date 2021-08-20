@@ -21,7 +21,6 @@ function initPage() {
 		document.getElementById('playlistBuilder').classList.remove('hiddenWhileLoad');
 		document.getElementById('queueContainer').classList.remove('hiddenWhileLoad');
 		constructor();
-		editInfoConstructor();
 	}, delayInMilliseconds);
 
 }
@@ -350,12 +349,12 @@ function startOverQueue() {
 	playerCurrentArtist.innerHTML = song.artists.main;
 
 	var currentlyPlaying = document.querySelectorAll('[data-q="' + firstElDataQ_ID + '"]')[0];
-	console.log('currentlyPlaying :');
-	console.log(currentlyPlaying);
+	// console.log('currentlyPlaying :');
+	// console.log(currentlyPlaying);
 
 	var nextPlaying = currentlyPlaying.nextSibling;
-	console.log('nextPlaying :');
-	console.log(nextPlaying);
+	// console.log('nextPlaying :');
+	// console.log(nextPlaying);
 
 	currentlyPlaying.className += (' playingSong');
 
@@ -378,6 +377,12 @@ function startOverQueue() {
 
 	playAudio();
 	console.log(song);
+
+	setTimeout(function () {
+		setColorPaletteHere = null;
+		setColorPalette();
+
+	}, 50);
 }
 
 
@@ -406,7 +411,7 @@ function playSong(Q_ID) {
 
 	audioPlayer.addEventListener('ended', (event) => {
 		nextSong();
-});
+	});
 
 	jsmediatags.read("http://" + location.hostname + "/" + song.path, {
 		onSuccess: function (tag) {
@@ -422,6 +427,12 @@ function playSong(Q_ID) {
 					// window.btoa(base64String);
 					btoa(base64String);
 				document.getElementById('coverArt').setAttribute('src', base64);
+
+				setTimeout(function () {
+					setColorPaletteHere = null;
+					setColorPalette();
+				}, 50);
+
 			} else {
 				document.getElementById('coverArt').style.display = "none";
 			}
@@ -462,6 +473,11 @@ function playSong(Q_ID) {
 
 	playAudio();
 	console.log(song);
+
+
+	setColorPalette();
+
+
 }
 
 function nextSong() {
@@ -526,7 +542,7 @@ function playAudio() {
 
 function pauseAudio() {
 	// removeClass(document.getElementById('playPauseButton'), 'playing');
-	
+
 	console.log('Pause button pressed');
 	audioPlayer = document.getElementById('audioPlayer');
 	audioPlayer.pause();
@@ -599,6 +615,50 @@ function updateMood(currSongMoodUpdatedAppended) {
 		xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
 		xhttp.send();
+	}
+}
+
+function setColorPalette() {
+	console.log('Getting color palette...');
+	const colorThief = new ColorThief();
+	const img = document.getElementById('coverArt');
+
+	// Make sure image is finished loading
+	if (img.complete) {
+		color = colorThief.getColor(img);
+	} else {
+		image.addEventListener('load', function () {
+			color = colorThief.getColor(img);
+		});
+	}
+
+	document.body.style.backgroundColor = "rgb(" + color + ")";
+
+
+
+	const swatches = 12;
+	// const colorThief = new ColorThief();
+
+	const palette = document.querySelector('.palette');
+	const image = document.querySelector('#coverArt');
+	const input = document.querySelector('[type="file"]');
+
+	image.onchange = e => {
+		image.src = URL.createObjectURL(input.files[0])
+	}
+
+	image.onload = () => {
+		URL.revokeObjectURL(image.src);
+		const colors = colorThief.getPalette(image, swatches);
+		while (palette.firstChild) palette.removeChild(palette.firstChild);
+		colors.reduce((palette, rgb) => {
+			const color = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+			const swatch = document.createElement('div');
+			swatch.style.setProperty('--color', color);
+			swatch.setAttribute('color', color);
+			palette.appendChild(swatch);
+			return palette;
+		}, palette)
 	}
 
 }

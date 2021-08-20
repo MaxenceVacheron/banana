@@ -13,5 +13,6 @@
 .phpunit.result.cache
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
-public/AutomaticallyAddedToBanana/  
-public/AutomaticallyAddToBanana/  
+/public/AutomaticallyAddedToBanana/  
+/public/AutomaticallyAddToBanana/  
+/migrations

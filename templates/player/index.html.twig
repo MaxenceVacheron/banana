@@ -16,6 +16,7 @@
 	<script src="Sortable.min.js"></script>	
 	{# <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script> #}
 	<script src="jsmediatags.js"></script>
+	<script src="color-thief-min.js"></script>
 	<script src="player.js"></script>
 	<script src="editinfo.js"></script>
 	
@@ -85,6 +86,9 @@
 				</div>
 		</div>
 		<div id="playerBar"></div>
+
+		<div class="palette"></div>
+
 		<div class="playerControlContainer">
 			<div id="previousButton" onclick="previousSong()" class="arrow arrow--left"></div>
 
@@ -108,26 +112,28 @@
 </div>
 <div class="modalExtBackground modal" id="modalExtBackground" onclick="closeInfo()"></div>
 <div class="editInfoContainer modal" id="editInfoContainer">
-		<form id="infoCreateForm" action="/info/create" method="GET">
-			<div class="edit-info" style="z-index: 999;">
-				<div class="form__group field">
-					<input type="number" id="songID" class="form__field" name="id" placeholder="ID" readonly required>
-					<label for="id" class="form__label">ID</label>
+	<div class="formContainer">
+			<form id="infoCreateForm" action="/info/create" method="GET">
+				<div class="edit-info" style="z-index: 999;">
+					<div class="form__group field">
+						<input type="number" id="songID" class="form__field" name="id" placeholder="ID" readonly required>
+						<label for="id" class="form__label">ID</label>
+					</div>
+					<div class="form__group field">
+						<input type="number" id="songYear" class="form__field" placeholder="Year" name="year" value="1997" required>
+						<label for="year" class="form__label">Year</label>
+					</div>
+					<br>
+					<div class="form__group field">
+						<input type="text" id="songName" class="form__field" placeholder="Title" name="title" value="songName" required>
+						<label for="title" class="form__label">Year</label>
+					</div>
+					<div id="artistInputContainer"></div>
 				</div>
-				<div class="form__group field">
-					<input type="number" id="songYear" class="form__field" placeholder="Year" name="year" value="Year" required>
-					<label for="year" class="form__label">Year</label>
-				</div>
-				<br>
-				<div class="form__group field">
-					<input type="text" id="songName" class="form__field" placeholder="Title" name="title" value="songName" required>
-					<label for="title" class="form__label">Year</label>
-				</div>
-				<div id="artistInputContainer"></div>
-			</div>
-			<input type="submit" value="Update">
+				<input type="submit" value="Update">
 
-		</form>
+			</form>
+	</div>
 </div>
 	
 </body>
@@ -138,9 +144,6 @@
 	const playerCoverArt = document.getElementById('coverArt');
 
 	const divs = document.querySelectorAll('.builderFilter');
-
-	{# divs.innerHTML = decodeURI(divs.innerHTML); #}
 </script>
-
 
 {% endblock %}

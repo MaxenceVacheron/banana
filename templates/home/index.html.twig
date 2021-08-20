@@ -42,78 +42,103 @@
 			border: 1px solid #ccc;
 			border-top: none;
 		}
+		.main-link {
+			left: 0;
+			line-height: 100px;
+			margin-top: -100px;
+			position: absolute;
+			text-align: center;
+			top: 50%;
+			width: 100%;
+			font-size: 222%;
+			text-decoration: none;
+			color: white;
+			-webkit-text-stroke: 2px rgb(255, 255, 255);
+			height: 100vh;
+
+		}
+		.main-link:hover {
+			color: #1c0514;
+			-webkit-text-stroke: 1px WHITE;
+			/* width and color */;
+		}
 	</style>
 
 	<div class="example-wrapper">
-		<h1>Hello ! ✅</h1>
-
+		<br>
+		<br>
 		What mood are you in today ?
 
+		<h1>
+			<a class='main-link' href="/player">Player</a>
+		</h1>
 
-		<div class="tab">
-			<button class="tablinks" onclick="openCity(event, 'Mood')">Mood</button>
-			<button class="tablinks" onclick="openCity(event, 'Artist')">Artist</button>
-			<button class="tablinks" onclick="openCity(event, 'Year')">Year</button>
-		</div>
-			<form action="/player/queue/" method="get">
 
-		<div id="Mood" class="tabcontent">
-				<ul>
-					{% for mood in moods %}
-						<li>
-							<input type="checkbox" name="mood[]" value="{{mood}}" id="{{mood}}"><label for="{{mood}}">{{mood}}</label>
-						</li>
+		{# 
+				<div class="tab">
+					<button class="tablinks" onclick="openCity(event, 'Mood')">Mood</button>
+					<button class="tablinks" onclick="openCity(event, 'Artist')">Artist</button>
+					<button class="tablinks" onclick="openCity(event, 'Year')">Year</button>
+				</div>
+					<form action="/player/queue/" method="get">
+		
+				<div id="Mood" class="tabcontent">
+						<ul>
+							{% for mood in moods %}
+								<li>
+									<input type="checkbox" name="mood[]" value="{{mood}}" id="{{mood}}"><label for="{{mood}}">{{mood}}</label>
+								</li>
+		
+							{% endfor %}
+						</ul>
+						<input type="submit" value="Submit">
+		
+				</div>
+		
+				<div id="Artist" class="tabcontent">
+						<ul>
+							{% for artist in artists %}
+								<li>
+									<input type="checkbox" name="artist[]" value="{{artist}}" id="{{artist}}"><label for="{{artist}}">{{artist}}</label>
+								</li>
+							{% endfor %}
+						</ul>
+						<input type="submit" value="Submit">
+		
+				</div>
+		
+				<div id="Year" class="tabcontent">
+						<ul>
+							{% for year in years %}
+								<li>
+									<input type="checkbox" name="year[]" value="{{year}}" id="{{year}}"><label for="{{year}}">{{year}}</label>
+								</li>
+							{% endfor %}
+						</ul>
+						<input type="submit" value="Submit">
+				</div>
+					</form> #}
 
-					{% endfor %}
-				</ul>
-				<input type="submit" value="Submit">
+		<script>
+			function openCity(evt, cityName) {
+var i,
+tabcontent,
+tablinks;
+tabcontent = document.getElementsByClassName("tabcontent");
 
-		</div>
+for (i = 0; i < tabcontent.length; i++) {
+tabcontent[i].style.display = "none";
+}
 
-		<div id="Artist" class="tabcontent">
-				<ul>
-					{% for artist in artists %}
-						<li>
-							<input type="checkbox" name="artist[]" value="{{artist}}" id="{{artist}}"><label for="{{artist}}">{{artist}}</label>
-						</li>
-					{% endfor %}
-				</ul>
-				<input type="submit" value="Submit">
+tablinks = document.getElementsByClassName("tablinks");
+for (i = 0; i < tablinks.length; i++) {
+tablinks[i].className = tablinks[i].className.replace(" active", "");
+}
 
-		</div>
-
-		<div id="Year" class="tabcontent">
-				<ul>
-					{% for year in years %}
-						<li>
-							<input type="checkbox" name="year[]" value="{{year}}" id="{{year}}"><label for="{{year}}">{{year}}</label>
-						</li>
-					{% endfor %}
-				</ul>
-				<input type="submit" value="Submit">
-		</div>
-			</form>
-
-<script>
-	function openCity(evt, cityName) {
-		var i,
-		tabcontent,
-		tablinks;
-		tabcontent = document.getElementsByClassName("tabcontent");
-
-		for (i = 0; i < tabcontent.length; i++) {
-			tabcontent[i].style.display = "none";
-		}
-
-		tablinks = document.getElementsByClassName("tablinks");
-		for (i = 0; i < tablinks.length; i++) {
-			tablinks[i].className = tablinks[i].className.replace(" active", "");
-		}
-
-		document.getElementById(cityName).style.display = "block";
-		evt.currentTarget.className += " active";
-	}
-</script>
+document.getElementById(cityName).style.display = "block";
+evt.currentTarget.className += " active";
+}
+		</script>
 
 
 	</div>
