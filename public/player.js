@@ -92,6 +92,7 @@ function constructor() {
 	// playButton.addEventListener('click', event => {
 	// 	toggleClass(playButton, 'paused');
 	// })
+	setColorPalette();
 
 }
 
@@ -290,71 +291,71 @@ function playQueue(jsonQueue) {
 
 }
 
-function startOverQueue() {
-	// alert('Q start over');
+// function startOverQueue() {
+// 	// alert('Q start over');
 
-	firstElDataQ_ID = document.querySelectorAll('#queueContainerContent')[0].firstChild.getAttribute('data-q');
-	song = queue_glbl[firstElDataQ_ID];
+// 	firstElDataQ_ID = document.querySelectorAll('#queueContainerContent')[0].firstChild.getAttribute('data-q');
+// 	song = queue_glbl[firstElDataQ_ID];
 
-	audioPlayer = document.getElementById('audioPlayer');
-	audioPlayer.setAttribute("src", song.path);
+// 	audioPlayer = document.getElementById('audioPlayer');
+// 	audioPlayer.setAttribute("src", song.path);
 
-	jsmediatags.read("http://" + location.hostname + "/" + song.path, {
-		onSuccess: function (tag) {
-			var tags = tag.tags;
+// 	jsmediatags.read("http://" + location.hostname + "/" + song.path, {
+// 		onSuccess: function (tag) {
+// 			var tags = tag.tags;
 
-			var image = tags.picture;
-			if (image) {
-				var base64String = "";
-				for (var i = 0; i < image.data.length; i++) {
-					base64String += String.fromCharCode(image.data[i]);
-				}
-				var base64 = "data:image/jpeg;base64," +
-					// window.btoa(base64String);
-					btoa(base64String);
-				document.getElementById('coverArt').setAttribute('src', base64);
-			} else {
-				document.getElementById('coverArt').setAttribute('src', '/favicon.ico');
-			}
-		}
-	});
+// 			var image = tags.picture;
+// 			if (image) {
+// 				var base64String = "";
+// 				for (var i = 0; i < image.data.length; i++) {
+// 					base64String += String.fromCharCode(image.data[i]);
+// 				}
+// 				var base64 = "data:image/jpeg;base64," +
+// 					// window.btoa(base64String);
+// 					btoa(base64String);
+// 				document.getElementById('coverArt').setAttribute('src', base64);
+// 			} else {
+// 				document.getElementById('coverArt').setAttribute('src', '/favicon.ico');
+// 			}
+// 		}
+// 	});
 
-	playerCurrentTitle.innerHTML = song.title;
-	document.title = song.artists.main + ' - ' + song.title;
-	playerCurrentArtist.innerHTML = song.artists.main;
+// 	playerCurrentTitle.innerHTML = song.title;
+// 	document.title = song.artists.main + ' - ' + song.title;
+// 	playerCurrentArtist.innerHTML = song.artists.main;
 
-	var currentlyPlaying = document.querySelectorAll('[data-q="' + firstElDataQ_ID + '"]')[0];
-	currentlyPlaying.className += (' playingSong');
+// 	var currentlyPlaying = document.querySelectorAll('[data-q="' + firstElDataQ_ID + '"]')[0];
+// 	currentlyPlaying.className += (' playingSong');
 
-	audioPlayer.addEventListener('ended', (event) => {
-		console.log('Song ended. Playing Next Song');
-		nextSong();
-	});
+// 	audioPlayer.addEventListener('ended', (event) => {
+// 		console.log('Song ended. Playing Next Song');
+// 		nextSong();
+// 	});
 
-	queue_current = firstElDataQ_ID;
+// 	queue_current = firstElDataQ_ID;
 
-	currentSongMoodsArray = song.moods;
+// 	currentSongMoodsArray = song.moods;
 
-	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
-	allcurrSongMoodUnq.forEach(el => {
-		el.classList.remove("selectedCurrSongMood");
-		el.setAttribute('selected', '0');
-	})
-	currentSongMoodsArray.forEach(el => {
-		target = document.getElementById('currSong-' + el);
-		target.className += (' selectedCurrSongMood');
-		target.setAttribute('selected', '1');
-	})
+// 	allcurrSongMoodUnq = Array.from(document.getElementsByClassName('currSongMoodUnq'));
+// 	allcurrSongMoodUnq.forEach(el => {
+// 		el.classList.remove("selectedCurrSongMood");
+// 		el.setAttribute('selected', '0');
+// 	})
+// 	currentSongMoodsArray.forEach(el => {
+// 		target = document.getElementById('currSong-' + el);
+// 		target.className += (' selectedCurrSongMood');
+// 		target.setAttribute('selected', '1');
+// 	})
 
 
-	playAudio();
-	console.log(song);
+// 	playAudio();
+// 	console.log(song);
 
-	setTimeout(function () {
-		setColorPalette();
+// 	setTimeout(function () {
+// 		setColorPalette();
 
-	}, 50);
-}
+// 	}, 500);
+// }
 
 
 
@@ -373,7 +374,7 @@ function playSong(Q_ID) {
 		// return; // document.querySelectorAll('#queueContainerContent > div:nth-child('+ queue_current_upped + ')')[0].classList.remove('playingSong');
 	} else {
 		document.querySelectorAll('.playingSong')[0].classList.remove('playingSong');
-// 
+		// 
 	}
 
 
@@ -391,6 +392,7 @@ function playSong(Q_ID) {
 
 	jsmediatags.read("http://" + location.hostname + "/" + song.path, {
 		onSuccess: function (tag) {
+			console.log('Read Media Tags');
 			var tags = tag.tags;
 
 			var image = tags.picture;
@@ -405,7 +407,7 @@ function playSong(Q_ID) {
 				document.getElementById('coverArt').setAttribute('src', base64);
 
 				setTimeout(function () {
-					// setColorPalette();
+					setColorPalette();
 				}, 50);
 
 			} else {
@@ -441,10 +443,10 @@ function playSong(Q_ID) {
 	playAudio();
 	console.log(song);
 
-	setTimeout(function () {
-		setColorPalette();
+	// setTimeout(function () {
+	// 	setColorPalette();
 
-	}, 50);
+	// }, 100);
 
 }
 
@@ -620,6 +622,22 @@ function setColorPalette() {
 		URL.revokeObjectURL(image.src);
 		const colors = colorThief.getPalette(image, swatches);
 		while (palette.firstChild) palette.removeChild(palette.firstChild);
+
+		forThisColorsShouldFontBeWhat = [];
+		colors.forEach((clr, index) => {
+			r = clr[0];
+			g = clr[1];
+			b = clr[2];
+			forThisColorsShouldFontBeWhat.push(getContrastColor(r, g, b, '1'));
+
+		})
+
+
+
+		console.log(colors);
+		console.log('forThisColorsShouldFontBeWhat');
+		console.log(forThisColorsShouldFontBeWhat);
+
 		colors.reduce((palette, rgb) => {
 			const color = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
 			const swatch = document.createElement('div');
@@ -629,9 +647,42 @@ function setColorPalette() {
 			return palette;
 		}, palette)
 		color = colorThief.getColor(img);
-		document.body.style.backgroundColor = "rgb(" + color + ")";
 
-		
+
+		rgbCol = [];
+		colorDiv = document.querySelectorAll('.palette > div');
+		colorDiv = Array.from(colorDiv);
+		colorDiv.forEach(el => {
+			rgbCol.push(el.getAttribute('color'));
+
+		})
+
+		console.log('rgb colors :');
+		console.log(rgbCol[0]); // rgb(15, 67, 78)
+
+
+		let root = document.documentElement;
+
+		root.style.setProperty('--primaryColor', rgbCol[0]);
+		root.style.setProperty('--primaryColorFont', forThisColorsShouldFontBeWhat[0]);
+
+		// document.body.style.backgroundColor = rgbCol[1];
+		root.style.setProperty('--secondaryColor', rgbCol[1]);
+		root.style.setProperty('--secondaryColorFont', forThisColorsShouldFontBeWhat[1]);
+
+		root.style.setProperty('--accentColor', rgbCol[2]);
+		root.style.setProperty('--accentColorFont', forThisColorsShouldFontBeWhat[0]);
+
+
 	}
 
+
+
+
+}
+
+function getContrastColor(R, G, B, A) {
+	const brightness = R * 0.299 + G * 0.587 + B * 0.114 + (1 - A) * 255;
+
+	return brightness > 186 ? "#000000" : "#FFFFFF";
 }

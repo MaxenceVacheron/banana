@@ -8,7 +8,15 @@
 		# purple: 665775 #
 	} */
 
+	:root {
+		--primaryColor: #000000;
+		--secondaryColor: #ffffff;
+		--accentColor: #949494;
 
+		--primaryColorFont:  #ffffff;
+		--secondaryColorFont: #000000;
+		--accentColorFont:  #ffffff;
+	}
 
 	* {
 		-webkit-transition: all 0.2s ease;
@@ -16,7 +24,7 @@
 		-ms-transition: all 0.2s ease;
 		-o-transition: all 0.2s ease;
 		transition: all 0.2s ease;
-		-webkit-tap-highlight-color: rgba(0,0,0,0);
+		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 
 	}
 
@@ -30,28 +38,32 @@
 		/* --primaryColor: #665775;
 		--secondaryColor: #576675;
 		--accentColor: #667557;		 */
-		--primaryColor: #000000;
+		/* --primaryColor: #000000;
 		--secondaryColor: #ffffff;
-		--accentColor: #667557;
-		background-color: var(--primaryColor);
+		--accentColor: #667557; */
+		background-color: var(--secondaryColor);
 	}
 
+	.palette {
+		display: none;
+	}
 
-.palette > div {
-	width: 20px;
-	height: 20px;
-	background-color: var(--color);
-	margin: 2px;
-  }
-  .palette > div::after {
-	content: attr(color);
-	font-family: monospace;
-	margin-left: 24px;
-	white-space: nowrap;
-  }
+	.palette>div {
+		width: 20px;
+		height: 20px;
+		background-color: var(--color);
+		margin: 2px;
+	}
+
+	.palette>div::after {
+		content: attr(color);
+		font-family: monospace;
+		margin-left: 24px;
+		white-space: nowrap;
+	}
 
 	.playlistBuilder {
-		background-color: #576675;
+		background-color: var(--primaryColor);
 		border-radius: 0px 0px 20px 20px;
 		height: 80%;
 		display: flex;
@@ -62,7 +74,7 @@
 		top: 0px;
 		z-index: 999;
 		transition: all 0.5s ease;
-
+		border: 1px solid var(--secondaryColor);
 	}
 
 	.playlistBuilderHidden {
@@ -73,7 +85,8 @@
 	}
 
 	.queueContainer {
-		background-color: #576675;
+		background-color: var(--primaryColor);
+		border: 1px solid var(--secondaryColor);
 		border-radius: 20px 20px 0px 0px;
 		height: 80%;
 		display: flex;
@@ -158,7 +171,7 @@
 	.toggle span:before {
 		width: 100%;
 		height: 5px;
-		background-color: #665775;
+		background-color: var(--accentColor);
 		transition: all 0.3s;
 		backface-visibility: hidden;
 		border-radius: 2px;
@@ -180,7 +193,7 @@
 	/* Style the tab */
 	.tab {
 		border-radius: 22px;
-		background-color: #665775;
+		background-color: var(--secondaryColor);
 		display: flex;
 		flex-flow: row nowrap;
 		justify-content: space-around;
@@ -212,14 +225,13 @@
 
 	/* Create an active/current tablink class */
 	.tab button.active {
-		background-color: #667557;
+		background-color: var(--accentColor);
 	}
 
 	/* Style the tab content */
 	.tabcontent {
 		display: none;
 		padding: 6px 12px;
-		border: 1px solid #576675;
 		border-top: none;
 
 		flex-flow: row wrap;
@@ -232,7 +244,7 @@
 	.builderFilter {
 		/* flex: 1 1 auto; */
 		border-radius: 5px;
-		background-color: #665775;
+		background-color: var(--secondaryColor);
 		padding: 0.3em;
 		margin: 0.2em;
 		font-weight: 400;
@@ -248,7 +260,7 @@
 	}
 
 	.tabcontent .selectedFilter {
-		background-color: #667557;
+		background-color: var(--accentColor);
 	}
 
 	.player {
@@ -266,7 +278,7 @@
 		min-width: 95vw;
 	}
 
-	#currSongMoodEditor{
+	#currSongMoodEditor {
 		position: relative;
 		top: 0;
 		left: 0;
@@ -280,25 +292,26 @@
 
 	#currSongMoodEditor::-webkit-scrollbar {
 		display: none;
-	      }
+	}
 
-	.currSongMoodUnq{
+	.currSongMoodUnq {
 		/* flex: 1 1 auto; */
 		font-size: x-large;
 		margin: 0.1em;
 		padding: 0.1em;
 		border-radius: 15px;
 		background-color: #576675;
-		text-align:center;
+		text-align: center;
 	}
 
-	.selectedCurrSongMood{
-		background-color:var(--accentColor);
+	.selectedCurrSongMood {
+		background-color: var(--accentColor);
 		border-radius: 5px;
+		color : var(--accentColorFont);
 
 	}
 
-	.songInfo{
+	.songInfo {
 		padding: 5px;
 	}
 
@@ -312,14 +325,15 @@
 	#coverArt {
 		width: 35vh;
 		height: 35vh;
-		object-fit:cover;
+		object-fit: cover;
 
 	}
 
 	#currentTitleArtistContainer {
 		display: flex;
 		flex-flow: column nowrap;
-		align-items: center
+		align-items: center;
+		color: var(--secondaryColorFont) ;
 	}
 
 	#playerBar {
@@ -341,7 +355,7 @@
 	}
 
 	#html5audio {
-		display: block;
+		display: none;
 		position: absolute;
 		float: left;
 		left: 50%;
@@ -350,7 +364,7 @@
 	}
 
 	.queue_song {
-		border: 1px solid grey;
+		/* border: 1px solid grey; */
 		padding: 5px 5px 5px 5px;
 		margin: 5px 5px 5px 5px;
 		min-width: 90vw;
@@ -358,10 +372,12 @@
 		flex-flow: row nowrap;
 		justify-content: space-between;
 		align-items: center;
+		color: var(--primaryColorFont);
 	}
 
 	.playingSong {
 		background-color: var(--accentColor);
+		color: var(--accentColorFont);
 	}
 
 	.iframemodal {
@@ -409,6 +425,7 @@
 		min-height: 50vh;
 		z-index: 99999;
 	}
+
 	.formContainer {
 		display: flex;
 		position: absolute;
@@ -502,9 +519,9 @@
 		padding: 15px 0 0;
 		margin-top: 10px;
 		width: 90%;
-	  }
-	  
-	  .form__field {
+	}
+
+	.form__field {
 		font-family: inherit;
 		width: 100%;
 		border: 0;
@@ -515,33 +532,36 @@
 		padding: 7px 0;
 		background: transparent;
 		transition: border-color 0.2s;
-	  }
-	  .form__field::placeholder {
+	}
+
+	.form__field::placeholder {
 		color: transparent;
-	  }
-	  .form__field:placeholder-shown ~ .form__label {
+	}
+
+	.form__field:placeholder-shown~.form__label {
 		font-size: 1.3rem;
 		cursor: text;
 		top: 20px;
-	  }
-	  
-	  .form__label {
+	}
+
+	.form__label {
 		position: absolute;
 		top: 0;
 		display: block;
 		transition: 0.2s;
 		font-size: 1rem;
 		color: #9b9b9b;
-	  }
-	  
-	  .form__field:focus {
+	}
+
+	.form__field:focus {
 		padding-bottom: 6px;
 		font-weight: 700;
 		border-width: 3px;
 		border-image: linear-gradient(to right, #11998e, #38ef7d);
 		border-image-slice: 1;
-	  }
-	  .form__field:focus ~ .form__label {
+	}
+
+	.form__field:focus~.form__label {
 		position: absolute;
 		top: 0;
 		display: block;
@@ -549,15 +569,16 @@
 		font-size: 1rem;
 		color: #11998e;
 		font-weight: 700;
-	  }
-	  
-	  /* reset input */
-	  .form__field:required, .form__field:invalid {
+	}
+
+	/* reset input */
+	.form__field:required,
+	.form__field:invalid {
 		box-shadow: none;
-	  }
-	  
-	  /* demo */
-	  /* body {
+	}
+
+	/* demo */
+	/* body {
 		font-family: "Poppins", sans-serif;
 		display: flex;
 		flex-direction: column;
@@ -568,46 +589,52 @@
 		background-color: #222222;
 	  } */
 
-/* The value content-box tells the div to place any border on the outside, increasing the width or height. If we change this value to border-box, the border is added to the inside of the box. */
-.playbutton {
-	box-sizing: border-box;
-	width: 0;
-	height: 74px;
-	border-style: solid;
-	border-width: 37px 0 37px 60px;
-	border-color: transparent transparent transparent #202020;
-	cursor: pointer;
-	will-change: border-width;
-	transition: all 0.2s ease;
-  }
-  .playbutton.playing {
-	border-style: double;
-	border-width: 0px 0 0px 60px;
-  }
-  .playbutton:hover {
-	border-color: transparent transparent transparent #404040;
-  }
+	/* The value content-box tells the div to place any border on the outside, increasing the width or height. If we change this value to border-box, the border is added to the inside of the box. */
+	.playbutton {
+		box-sizing: border-box;
+		width: 0;
+		height: 74px;
+		border-style: solid;
+		border-width: 37px 0 37px 60px;
+		border-color: transparent transparent transparent var(--secondaryColorFont);
+		cursor: pointer;
+		will-change: border-width;
+		transition: all 0.2s ease;
+	}
 
-  .arrow {
-	position: relative;
-	display: inline-block;
-	margin: 20px;
-	padding: 25px;
-	box-shadow: 15px -15px 0 0 #202020 inset;
-  }
-  .arrow--left {
-	transform: rotate(45deg);
-	left: 25px;
-  }
-  .arrow--right {
-	transform: rotate(225deg);
-	right: 25px;
-  }
-  .arrow--up {
-	transform: rotate(135deg);
-	top: 25px;
-  }
-  .arrow--down {
-	transform: rotate(-45deg);
-	bottom: 25px;
-  }
+	.playbutton.playing {
+		border-style: double;
+		border-width: 0px 0 0px 60px;
+	}
+
+	.playbutton:hover {
+		border-color: transparent transparent transparent #404040;
+	}
+
+	.arrow {
+		position: relative;
+		display: inline-block;
+		margin: 20px;
+		padding: 25px;
+		box-shadow: 15px -15px 0 0 var(--secondaryColorFont) inset;
+	}
+
+	.arrow--left {
+		transform: rotate(45deg);
+		left: 25px;
+	}
+
+	.arrow--right {
+		transform: rotate(225deg);
+		right: 25px;
+	}
+
+	.arrow--up {
+		transform: rotate(135deg);
+		top: 25px;
+	}
+
+	.arrow--down {
+		transform: rotate(-45deg);
+		bottom: 25px;
+	}
