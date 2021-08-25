@@ -1,5 +1,22 @@
 var MoodsAndArtistTypes = getMoodsAndArtistTypes();
 allArtistsTypes = MoodsAndArtistTypes['artistTypes'];
+tempArtDatalist = '<datalist id=allArtistTypes>';
+allArtistsTypes.forEach(element => {
+	tempArtDatalist += '<option>' + element + '</option>';
+});
+tempArtDatalist += '</datalist>';
+
+
+allArtists = MoodsAndArtistTypes['artists'];
+
+AllArtDatalist = '<datalist id=allArtistsEver>';
+allArtists.forEach(element => {
+	AllArtDatalist += '<option>' + element + '</option>';
+});
+AllArtDatalist += '</datalist>';
+
+
+
 
 allMoods = MoodsAndArtistTypes['moods'];
 
@@ -15,15 +32,6 @@ function getMoodsAndArtistTypes() {
 	xmlHttp.open("GET", theUrl, false); // false for synchronous request
 	xmlHttp.send(null);
 	return JSON.parse(xmlHttp.responseText);
-
-	// var xmlHttp = new XMLHttpRequest();
-	// xmlHttp.onreadystatechange = function () {
-	// 	if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-	// 		return JSON.parse(xmlHttp.responseText);
-	// }
-	// xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-	// xmlHttp.send(null);
-
 }
 
 function callAPI(songID) {
@@ -55,28 +63,28 @@ function getInfo(typeAndId) {
 			t_array = Array.from(info[0]['artists'][artTypeLoop]);
 
 			allArtistInputs = '';
+			
+		// 	<div class="form__group field">
+		// 	<input type="text" id="newMood" class="form__field" placeholder="Music" name="mood" value="Music" required>
+		// 	<label for="newMood" class="form__label">Mood</label>
+		// </div>
 
 			t_array.forEach(currArt => {
-				console.log(artTypeLoop);
-				console.log(currArt);
-
-				html = '<br><div class="artistInput"><input type="text" id="' + currArt + '" name="artists[' + artTypeLoop + '][]" value="' + currArt + '" readonly="readonly">'
+				html = '<br><div class="artistInput form__group field"><input type="text" id="' + currArt + '"class="form__field" name="artists[' + artTypeLoop + '][]" value="' + currArt + '" readonly="readonly" list="allArtistsEver">'
 				html += '<select type="text" id="' + artTypeLoop + currArt + '" name="artistType" value="' + artTypeLoop + '">';
 
-				tempArtDatalist = '<datalist id=allArtistTypes>';
+				thisArtDatalist = '<datalist id=thisallArtistTypes>';
 				allArtistsTypes.forEach(element => {
 					if (element != artTypeLoop) {
-						tempArtDatalist += '<option disabled>' + element + '</option>';
-
+						thisArtDatalist += '<option disabled>' + element + '</option>';
 					} else {
-						tempArtDatalist += '<option selected>' + artTypeLoop + '</option>';
-
+						thisArtDatalist += '<option selected>' + artTypeLoop + '</option>';
 					}
 				})
-				tempArtDatalist += '</datalist>';
-				html += tempArtDatalist;
+				thisArtDatalist += '</datalist>';
+				html += thisArtDatalist;
 
-				html += '</select></div>';
+				html += '</select><span onclick="removeExistingArtist(this)"; style="color : white;">REMOVE</span></div>';
 				artisDiv.innerHTML += (html);
 				document.getElementById(artTypeLoop + currArt).selectedIndex = index;
 
@@ -84,10 +92,7 @@ function getInfo(typeAndId) {
 
 
 		} catch (error) {
-			console.log('ERROR CAUGHT:');
-			console.log('element not found is');
 			//console.error(error);
-			console.log(artTypeLoop);
 
 			// expected output: ReferenceError: nonExistentFunction is not defined
 			// Note - error messages will vary depending on browser
@@ -96,8 +101,6 @@ function getInfo(typeAndId) {
 	})
 	// EDIT ALL MOOD SONG IF NECESSARY
 	// allMoods.forEach((mood, index) => {
-	// 	// console.log('Mood found:');
-	// 	//console.log(mood);
 	// 	html = '';
 	// 	html += '<li><input type="checkbox" id="' + mood + '" name="mood[]" value="' + mood + '" class="moodSelector"><label for="' + mood + '">' + mood + '</label></li>';
 	// 	document.getElementById('moodul').innerHTML += html;
@@ -106,26 +109,46 @@ function getInfo(typeAndId) {
 	// songMoods.forEach((songMood, index) => {
 	// 	document.getElementById(songMood).checked = true;
 	// })
-	artisDiv.innerHTML += '<span onclick="addArtistField()">+</span>';
+	artisDiv.innerHTML += '<br><span onclick="addArtistField()" style="color:white">Add Field</span>';
 
 }
 
 function addArtistField() {
-	tempArtDatalist = '<datalist id=allArtistTypes>';
-	allArtistsTypes.forEach(element => {
-		tempArtDatalist += '<option>' + element + '</option>';
-	})
-	tempArtDatalist += '</datalist>';
-	html = '<div class="artistInput"><input type="text" name="artists[CHANGEME][]" value="">'
+	html = '<div class="artistInput form__group field"><input type="text" name="artists[CHANGEME][]" class="form__field" value="" list="allArtistsEver">'
+	html += AllArtDatalist;
 	html += '<select type="text" name="artistType" value=""></div>';
-	html += tempArtDatalist;
-	html += '</select><span onclick="remArtistField(this)">  REMOVE</span>';
+	html += tempArtDatalist; // AT TOP OF FILE
+	html += '</select><span onclick="remArtistField(this)" style="color:white"> REMOVE</span>';
 	artisDiv.innerHTML += (html);
-
-
 }
 
 function remArtistField(song) {
 	var elem = song.parentElement;
 	elem.remove();
+}
+
+function removeExistingArtist(song) {
+	var element = song.parentElement;
+	var artistNameInput = element.querySelector("input");
+	var newName = '';
+	newName = artistNameInput.getAttribute('name');
+	newName = newName.replace('artists', 'removeArtist');
+	artistNameInput.setAttribute('name', newName);
+
+	song.setAttribute('onclick', 'cancelRemoveExistingArtist(this)');
+	element.style.opacity = 0.3;
+}
+
+function cancelRemoveExistingArtist(song) {
+	var element = song.parentElement;
+
+	var artistNameInput = element.querySelector("input");
+	var newName = '';
+	newName = artistNameInput.getAttribute('name');
+
+	newName = newName.replace('removeArtist', 'artists');
+	artistNameInput.setAttribute('name', newName);
+	song.setAttribute('onclick', 'removeExistingArtist(this)');
+	element.style.opacity = 1;
+
 }

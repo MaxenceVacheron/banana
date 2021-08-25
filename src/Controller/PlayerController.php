@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Album;
 use App\Entity\Artist;
+use App\Entity\ArtistType;
 use App\Entity\Mood;
 use App\Entity\Song;
 use Doctrine\ORM\EntityManagerInterface;
@@ -93,8 +94,15 @@ class PlayerController extends AbstractController
 		$artistRepo = $this->em->getRepository(Artist::class);
 		$albumRepo = $this->em->getRepository(Album::class);
 
+		// GET ALL TYPE OF ARTIST IN DB
+		$artistTypeRepo = $this->em->getRepository(ArtistType::class);
+		$allExistingArtistTypes = $artistTypeRepo->findAll();
+		$allExistingArtistTypesNames = [];
+		foreach ($allExistingArtistTypes as $allExistingArtistType) {
+			$allExistingArtistTypesNames[] = $allExistingArtistType->getName();
+		}
+
 		$askedMoods = array_key_exists('mood', $askedQuery) ? $askedQuery['mood'] : null;
-		// dd($askedMoods);
 		$askedArtists = array_key_exists('artist', $askedQuery) ? $askedQuery['artist'] : null;
 		$askedAlbums = array_key_exists('album', $askedQuery) ? $askedQuery['album'] : null;
 		$askedYears = array_key_exists('year', $askedQuery) ? $askedQuery['year'] : null;
@@ -121,6 +129,24 @@ class PlayerController extends AbstractController
 						$moodNames[] = $unqMood->getName();
 					}
 
+
+					$albumsArray = []; //ALL ALBUMS THE SONG IS IN
+					$_albumsArray = $songLinkedtoMood->getAlbums()->getValues(); // OTHER ALBUMS THE SONG IS FEATURED IN
+
+					foreach ($_albumsArray as $unqAlbum) {
+						$albumsArrayUnqName = $unqAlbum->getName();
+						$albumsArrayYear = $unqAlbum->getYear();
+
+						$unqAlbumArtists = [];
+						$albumsArrayArtists = $unqAlbum->getArtists()->getValues();
+						foreach ($albumsArrayArtists as $unqAlbumArtist) {
+							$unqAlbumArtists[] = $unqAlbumArtist->getName();
+						}
+
+						$albumsArray[$albumsArrayUnqName]['year'] = $albumsArrayYear;
+						$albumsArray[$albumsArrayUnqName]['artists'] = $unqAlbumArtists;
+					}
+
 					$songsQueue[] =
 						[
 							'id' => $songLinkedtoMood->getId(),
@@ -129,12 +155,11 @@ class PlayerController extends AbstractController
 							'title' => $songLinkedtoMood->getTitle(),
 							'artists' => $artistsArray,
 							'moods' => $moodNames,
-							'album' => $songLinkedtoMood->getAlbums(),
+							'album' => $albumsArray,
 						];
 				}
 			}
 		}
-
 		if ($askedArtists) {
 			foreach ($askedArtists as $askedArtist) {
 
@@ -160,7 +185,7 @@ class PlayerController extends AbstractController
 					// }
 
 					$artistsArray = [];
-					$songHasArt = $songLinkedToArtist->getSongHasArtists(); 
+					$songHasArt = $songLinkedToArtist->getSongHasArtists();
 					foreach ($songHasArt as $sameSongDifArtist) {
 						$artistType = $sameSongDifArtist->getArtistType()->getName();
 						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
@@ -202,7 +227,6 @@ class PlayerController extends AbstractController
 				}
 			}
 		}
-
 		if ($askedAlbums) {
 
 			foreach ($askedAlbums as $askedAlbum) {
@@ -213,7 +237,7 @@ class PlayerController extends AbstractController
 				foreach ($songsLinkedtoAlbum as $songLinkedtoAlbum) {
 
 					$artistsArray = [];
-					$songHasArt = $songLinkedtoAlbum->getSongHasArtists(); 
+					$songHasArt = $songLinkedtoAlbum->getSongHasArtists();
 					foreach ($songHasArt as $sameSongDifArtist) {
 						$artistType = $sameSongDifArtist->getArtistType()->getName();
 						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
@@ -255,13 +279,12 @@ class PlayerController extends AbstractController
 				}
 			}
 		}
-
 		if ($askedYears) {
 			foreach ($askedYears as $askedYear) {
 				foreach ($songRepo->findBy(['year' => $askedYear]) as $_song) {
 
 					$artistsArray = [];
-					$songHasArt = $_song->getSongHasArtists(); 
+					$songHasArt = $_song->getSongHasArtists();
 					foreach ($songHasArt as $sameSongDifArtist) {
 						$artistType = $sameSongDifArtist->getArtistType()->getName();
 						$artistsArray[$artistType][] = $sameSongDifArtist->getArtist()->getName();
@@ -300,6 +323,78 @@ class PlayerController extends AbstractController
 							'moods' => $moodNames,
 							'albums' => $albumsArray,
 						];
+				}
+			}
+		}
+
+		$hardAskedMoods = array_key_exists('hardMood', $askedQuery) ? $askedQuery['hardMood'] : null;
+		$hardAskedArtists = array_key_exists('hardArtist', $askedQuery) ? $askedQuery['hardArtist'] : null;
+		$hardAskedAlbums = array_key_exists('hardAlbum', $askedQuery) ? $askedQuery['hardAlbum'] : null;
+		$hardAskedYears = array_key_exists('hardYear', $askedQuery) ? $askedQuery['hardYear'] : null;
+
+		// dd($hardAskedMoods);
+		// dd($songsQueue);
+
+
+		foreach ($songsQueue as $key => $unqQueueSong) {
+
+			// var_dump($unqQueueSong);
+			// var_dump('<br><br><br>');
+			// var_dump('truc');
+
+			$hardAskedMoodsFound = array_key_exists('hardMood', $askedQuery) ? true : false; // is true if hardMood exist, otherwise false.
+			$hardAskedArtistsFound = array_key_exists('hardArtist', $askedQuery) ? true : false; // is true is hardMood exist, otherwise false.
+			$hardAskedAlbumsFound = array_key_exists('hardAlbum', $askedQuery) ? true : false; // is true is hardMood exist, otherwise false.
+			$hardAskedYearsFound = array_key_exists('hardYear', $askedQuery) ? true : false; // is true is hardMood exist, otherwise false.
+
+
+			// $hardAskedMoodsFound = true;
+			// $hardAskedArtistsFound = true;
+			// $hardAskedAlbumsFound = true;
+			// $hardAskedYearsFound = true;
+
+			if ($hardAskedMoods) {
+				// var_dump('hi');
+				foreach ($hardAskedMoods as $hardAskedMood) {
+					if (!in_array($hardAskedMood, $unqQueueSong['moods'])) {
+						$hardAskedMoodsFound = false;
+					}
+				}
+			}
+			if ($hardAskedArtists) {
+				foreach ($hardAskedArtists as $hardAskedArtist) {
+					foreach ($allExistingArtistTypesNames as $existingArtistTypesName) {
+						if (array_key_exists($existingArtistTypesName, $unqQueueSong['artists'])) {
+							if (!in_array($hardAskedArtist, $unqQueueSong['artists'][$existingArtistTypesName])) {
+								$hardAskedArtistsFound = false;
+								// unset($songsQueue[$key]);
+							}
+						} else {
+							$hardAskedArtistsFound = false;
+							unset($songsQueue[$key]);
+						}
+					}
+				}
+			}
+			if ($hardAskedAlbums) {
+				foreach ($hardAskedAlbums as $hardAskedAlbum) {
+					if (!in_array($hardAskedAlbum, $unqQueueSong['album'])) {
+						$hardAskedAlbumsFound = false;
+					}
+				}
+			}
+			if ($hardAskedYears) {
+				foreach ($hardAskedYears as $hardAskedYear) {
+					if (!in_array($hardAskedYear, $unqQueueSong['year'])) {
+						$hardAskedYearsFound = false;
+					}
+				}
+			}
+			if ($hardAskedMoods || $hardAskedArtists || $hardAskedAlbums || $hardAskedYears) {
+				if ($hardAskedMoodsFound || $hardAskedArtistsFound || $hardAskedAlbumsFound || $hardAskedYearsFound) {
+					// break;
+				} else {
+					unset($songsQueue[$key]);
 				}
 			}
 		}

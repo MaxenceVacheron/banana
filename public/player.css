@@ -9,13 +9,14 @@
 	} */
 
 	:root {
-		--primaryColor: #000000;
-		--secondaryColor: #ffffff;
-		--accentColor: #949494;
+		--primaryColor: #8a8a8afa;
+		--secondaryColor: #1a1a1a;
+		--accentColor: #5c5c5c;
+		--accentColorFont: #ffffff;
+		--accentColorFontInversed: #1a1a1a;
 
-		--primaryColorFont:  #ffffff;
-		--secondaryColorFont: #000000;
-		--accentColorFont:  #ffffff;
+		--primaryColorFont: #000000;
+		--secondaryColorFont: #ffffff;
 	}
 
 	* {
@@ -27,6 +28,7 @@
 		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 
 	}
+
 
 	body {
 		/* background-color: #665775; */
@@ -41,7 +43,23 @@
 		/* --primaryColor: #000000;
 		--secondaryColor: #ffffff;
 		--accentColor: #667557; */
-		background-color: var(--secondaryColor);
+		background-color: var(--accentColor);
+	}
+
+	.noselect {
+		-webkit-touch-callout: none;
+		/* iOS Safari */
+		-webkit-user-select: none;
+		/* Safari */
+		-khtml-user-select: none;
+		/* Konqueror HTML */
+		-moz-user-select: none;
+		/* Old versions of Firefox */
+		-ms-user-select: none;
+		/* Internet Explorer/Edge */
+		user-select: none;
+		/* Non-prefixed version, currently
+										supported by Chrome, Edge, Opera and Firefox */
 	}
 
 	.palette {
@@ -63,7 +81,9 @@
 	}
 
 	.playlistBuilder {
-		background-color: var(--primaryColor);
+		/* background-color: var(--primaryColor); */
+		background: linear-gradient(-45deg, var(--accentColor) 0%, var(--accentColorFont) 200%);
+
 		border-radius: 0px 0px 20px 20px;
 		height: 80%;
 		display: flex;
@@ -74,7 +94,14 @@
 		top: 0px;
 		z-index: 999;
 		transition: all 0.5s ease;
-		border: 1px solid var(--secondaryColor);
+
+	}
+
+	#playlistBuilderLaunchButton {
+		z-index: 99999999;
+		position: absolute;
+		bottom: 0px;
+		margin-bottom: 10vh;
 	}
 
 	.playlistBuilderHidden {
@@ -85,14 +112,14 @@
 	}
 
 	.queueContainer {
-		background-color: var(--primaryColor);
-		border: 1px solid var(--secondaryColor);
+		/* background-color: var(--primaryColor); */
+		background: linear-gradient(135deg, var(--accentColor) 0%, var(--accentColorFont) 200%);
 		border-radius: 20px 20px 0px 0px;
-		height: 80%;
+		height: 85%;
 		display: flex;
 		flex-flow: column nowrap;
 		align-items: center;
-		padding: 38px 5px 1px 5px;
+		/* padding: 38px 5px 1px 5px; */
 		position: relative;
 		bottom: 65%;
 		z-index: 999;
@@ -140,7 +167,7 @@
 	}
 
 	.queueToggleContainer {
-		position: absolute;
+		/* position: absolute; */
 		top: 0;
 		width: 95%;
 	}
@@ -194,6 +221,7 @@
 	.tab {
 		border-radius: 22px;
 		background-color: var(--secondaryColor);
+		color: var(--secondaryColorFont);
 		display: flex;
 		flex-flow: row nowrap;
 		justify-content: space-around;
@@ -203,6 +231,7 @@
 	/* Style the buttons inside the tab */
 	.tab button {
 		border-radius: 22px;
+		color: var(--secondaryColorFont);
 
 		background-color: inherit;
 		float: left;
@@ -216,7 +245,7 @@
 
 	/* Change background color of buttons on hover */
 	.tab button:hover {
-		background-color: #758267;
+		background-color: var(--accentColorFont);
 	}
 
 	.tablinks {
@@ -226,6 +255,7 @@
 	/* Create an active/current tablink class */
 	.tab button.active {
 		background-color: var(--accentColor);
+		color: var(--accentColorFont);
 	}
 
 	/* Style the tab content */
@@ -245,22 +275,36 @@
 		/* flex: 1 1 auto; */
 		border-radius: 5px;
 		background-color: var(--secondaryColor);
+		color: var(--secondaryColorFont);
 		padding: 0.3em;
-		margin: 0.2em;
+		margin: 3px;
 		font-weight: 400;
+	}
+
+	span[data-el="mood-music"] {
+		font-style: italic;
+		display: none;
 	}
 
 
 
-	#Mood span {
+	/* #Mood span {
 		font-size: x-large;
 		font-weight: 400;
 		margin: 0.1em;
 		padding: 0.1em;
-	}
+	} */
 
 	.tabcontent .selectedFilter {
 		background-color: var(--accentColor);
+		/* margin: 3px; */
+
+	}
+
+	.tabcontent .doubleSelectedFilter {
+		background-color: var(--accentColor);
+		border: 3px var(--accentColorFont) q;
+		margin: 0px;
 	}
 
 	.player {
@@ -276,6 +320,10 @@
 		transform: translate(-50%, -50%);
 		/* height: 85vh; */
 		min-width: 95vw;
+		display: flex;
+		flex-flow: column nowrap;
+		min-height: 95vh;
+		justify-content: space-evenly;
 	}
 
 	#currSongMoodEditor {
@@ -300,32 +348,37 @@
 		margin: 0.1em;
 		padding: 0.1em;
 		border-radius: 15px;
-		background-color: #576675;
+		background-color: var(--accentColor);
+		color: var(--accentColorFontInversed);
 		text-align: center;
 	}
 
 	.selectedCurrSongMood {
-		background-color: var(--accentColor);
-		border-radius: 5px;
-		color : var(--accentColorFont);
+		/* background-color: var(--accentColor); */
+		border-radius: 15px;
+		/* color : var(--accentColorFont); */
+		/* border: 1px solid var(--accentColorFont); */
 
 	}
 
 	.songInfo {
 		padding: 5px;
+		display: flex;
+		flex-flow: column nowrap;
 	}
 
 	#coverArtContainer {
 		display: flex;
 		justify-content: center;
-		min-height: 35vh;
+		min-height: 25vh;
 
 	}
 
 	#coverArt {
-		width: 35vh;
-		height: 35vh;
+		width: 25vh;
+		height: 25vh;
 		object-fit: cover;
+		border-radius: 3%;
 
 	}
 
@@ -333,7 +386,24 @@
 		display: flex;
 		flex-flow: column nowrap;
 		align-items: center;
-		color: var(--secondaryColorFont) ;
+		color: var(--secondaryColorFont);
+	}
+
+	.currentTitle {
+		color: var(--accentColorFont);
+		/* color : var(--accentColor); */
+		/* color : white; */
+		font-size: x-large;
+		/* -webkit-text-stroke: 1px grey; */
+
+	}
+
+	.currentArtist {
+		color: var(--accentColorFont);
+		/* color : var(--accentColor); */
+		font-size: xx-large;
+		/* -webkit-text-stroke: 1px grey; */
+
 	}
 
 	#playerBar {
@@ -344,9 +414,10 @@
 	}
 
 	.playerControlContainer {
+		justify-content: space-between;
 		display: flex;
 		flex-flow: row nowrap;
-		justify-content: space-evenly;
+		align-items: center;
 		margin: 10px 10px 10px 10px;
 	}
 
@@ -359,12 +430,12 @@
 		position: absolute;
 		float: left;
 		left: 50%;
-		top: 60%;
+		top: 75%;
 		transform: translate(-50%, -50%)
 	}
 
 	.queue_song {
-		/* border: 1px solid grey; */
+		border: 1px solid var(--accentColor);
 		padding: 5px 5px 5px 5px;
 		margin: 5px 5px 5px 5px;
 		min-width: 90vw;
@@ -412,7 +483,7 @@
 
 	.editInfoContainer {
 		background-color: var(--secondaryColor);
-		border-radius: 10%;
+		border-radius: 5%;
 		/* border: 1px gold; */
 		display: none;
 		position: absolute;
@@ -421,9 +492,23 @@
 		top: 50%;
 		transform: translate(-50%, -50%);
 		/* height: 85vh; */
-		min-width: 92vw;
-		min-height: 50vh;
+		min-width: 82vw;
+		min-height: 85vh;
 		z-index: 99999;
+		overflow-y: scroll;
+	}
+
+	/* Hide scrollbar for Chrome, Safari and Opera */
+	.editInfoContainer::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* Hide scrollbar for IE, Edge and Firefox */
+	.editInfoContainer {
+		-ms-overflow-style: none;
+		/* IE and Edge */
+		scrollbar-width: none;
+		/* Firefox */
 	}
 
 	.formContainer {
@@ -443,12 +528,17 @@
 	}
 
 	#infoCreateForm {
+		padding-top: 15%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		flex-wrap: nowrap;
 		/* border : 5vh solid var(--accentColor); */
 
+	}
+
+	#infoCreateIframe {
+		background-color: aliceblue;
 	}
 
 	.moods-container {
@@ -550,14 +640,14 @@
 		display: block;
 		transition: 0.2s;
 		font-size: 1rem;
-		color: #9b9b9b;
+		color: var(--accentColorFont);
 	}
 
 	.form__field:focus {
 		padding-bottom: 6px;
 		font-weight: 700;
 		border-width: 3px;
-		border-image: linear-gradient(to right, #11998e, #38ef7d);
+		border-image: linear-gradient(to right, var(--accentColorFont), var(--accentColor));
 		border-image-slice: 1;
 	}
 
@@ -567,7 +657,7 @@
 		display: block;
 		transition: 0.2s;
 		font-size: 1rem;
-		color: #11998e;
+		color: var(--accentColor);
 		font-weight: 700;
 	}
 
@@ -591,12 +681,13 @@
 
 	/* The value content-box tells the div to place any border on the outside, increasing the width or height. If we change this value to border-box, the border is added to the inside of the box. */
 	.playbutton {
+
 		box-sizing: border-box;
 		width: 0;
 		height: 74px;
 		border-style: solid;
 		border-width: 37px 0 37px 60px;
-		border-color: transparent transparent transparent var(--secondaryColorFont);
+		border-color: transparent transparent transparent var(--accentColorFont);
 		cursor: pointer;
 		will-change: border-width;
 		transition: all 0.2s ease;
@@ -608,7 +699,7 @@
 	}
 
 	.playbutton:hover {
-		border-color: transparent transparent transparent #404040;
+		border-color: transparent transparent transparent --accentColor;
 	}
 
 	.arrow {
@@ -616,7 +707,7 @@
 		display: inline-block;
 		margin: 20px;
 		padding: 25px;
-		box-shadow: 15px -15px 0 0 var(--secondaryColorFont) inset;
+		box-shadow: 15px -15px 0 0 var(--accentColorFont) inset;
 	}
 
 	.arrow--left {

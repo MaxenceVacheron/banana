@@ -13,6 +13,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
 
 	<link href="player.css" rel="stylesheet">
+	<script src="/jquery-3.6.0.js"></script>
 	<script src="Sortable.min.js"></script>	
 	{# <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script> #}
 	<script src="jsmediatags.js"></script>
@@ -25,39 +26,47 @@
 <body onload="initPage()"> 
 	<div id='playlistBuilder' class="playlistBuilder hiddenWhileLoad" selected="1">
 		<div class="tab">
-			<button class="tablinks" onclick="openCity(event, 'Mood')">Mood</button>
-			<button class="tablinks" onclick="openCity(event, 'Artist')">Artist</button>
-			<button class="tablinks" onclick="openCity(event, 'Album')">Album</button>
-			<button class="tablinks" onclick="openCity(event, 'Year')">Year</button>
-			<button class="tablinks" onclick="openCity(event, 'Search')"><b style="font-size:x-large">⌕</b></button>
+			<button class="tablinks" onclick="openCity('moodFilterMain')" id="moodFilterMainMenu">Mood</button>
+			{# <button class="tablinks" onclick="openCity('artistFilterMain')" id="artistFilterMainMenu">Artist</button>
+			<button class="tablinks" onclick="openCity('albumFilterMain')" id="albumFilterMainMenu">Album</button>
+			<button class="tablinks" onclick="openCity('yearFilterMain')" id="yearFilterMainMenu">Year</button> #}
+			<button class="tablinks" onclick="openCity('searchMain')" id="searchMainMenu"><b style="font-size:x-large">⌕</b></button>
 		</div>
-		<div id="Mood" class="tabcontent">
+		<div id="moodFilterMainTab" class="tabcontent">
 			{% for mood in moods %}
-				<span class="builderFilter" id="{{mood}}" data-el="mood-{{mood}}" selected="0">{{mood}}</span>
+				<span class="builderFilter noselect" id="{{mood}}" data-el="mood-{{mood}}" selected="0">{{mood}}</span>
 			{% endfor %}
 		</div>
-		<div id="Artist" class="tabcontent">
+		<div id="artistFilterMainTab" class="tabcontent">
 			{% for artist in artists %}
-				<span class="builderFilter" id="{{artist}}" data-el="artist-{{artist}}" selected="0">{{artist}}</span>
+				<span class="builderFilter noselect" id="{{artist}}" data-el="artist-{{artist}}" selected="0">{{artist}}</span>
 			{% endfor %}
 		</div>
-		<div id="Album" class="tabcontent">
+		<div id="albumFilterMainTab" class="tabcontent">
 			{% for album in albums %}
-				<span class="builderFilter" id="{{album}}" data-el="album-{{album}}" selected="0">{{album}}</span>
+				<span class="builderFilter noselect" id="{{album}}" data-el="album-{{album}}" selected="0">{{album}}</span>
 			{% endfor %}
 		</div>
-		<div id="Year" class="tabcontent">
+		<div id="yearFilterMainTab" class="tabcontent">
 			{% for year in years %}
-				<span class="builderFilter" id="{{year}}" data-el="year-{{year}}" selected="0">{{year}}</span>
+				<span class="builderFilter noselect" id="{{year}}" data-el="year-{{year}}" selected="0">{{year}}</span>
 			{% endfor %}
 		</div>
-		<div id="Search" class="tabcontent">
-			<h3>Coming soon..</h3>
+		<div id="searchMainTab" class="tabcontent">
+			<form id="addMoodForm" action="/info/create/mood" method="GET">
+				<div class="edit-info" style="z-index: 999;">
+					<div class="form__group field">
+						<input type="text" id="newMood" class="form__field" placeholder="Music" name="mood" value="Music" required>
+						<label for="newMood" class="form__label">Mood</label>
+					</div>
+				</div>
+				<input type="submit" value="Update">
+			</form>
 		</div>
 
-		<h1 onclick="buildQueueQuery();hideShowPlaylistBuilder()" style="z-index:99999999"><b style="color:#FFFFFF;-webkit-text-stroke: 1px black;font-style: italic;">🍌 Play songs 🍌</b></h1>
+		<h1 id='playlistBuilderLaunchButton' onclick="buildQueueQuery(playQueue);hideShowPlaylistBuilder()" style=""><b class="noselect" style="color:#FFFFFF;">🍌 Play <span id="playlistSize"></span> songs 🍌</b></h1>
 		<div class="builderToggleContainer" onclick="hideShowPlaylistBuilder();">
-			<a  id="buildertoggle" class="toggle on"><span></span></a>
+			<a id="buildertoggle" class="toggle on"></a>
 		</div>
 	</div>
 
@@ -71,7 +80,7 @@
 	<div id="player" class="player" onload="initPage()">
 		<div id="currSongMoodEditor">
 			{% for mood in moods %}
-				<span class="currSongMoodUnq" id="currSong-{{mood}}" data-el="mood-{{mood}}" onclick="updateMood(this)" selected="0">{{mood}}</span>
+				<span class="currSongMoodUnq noselect" id="currSong-{{mood}}" data-el="mood-{{mood}}" onclick="updateMood(this)" selected="0">{{mood}}</span>
 			{% endfor %}
 		</div>
 		<div id="playerMenu"></div>
@@ -81,8 +90,8 @@
 				</div>
 				<br>
 				<div id="currentTitleArtistContainer">
-					<h2 id="currentArtist" class="currentArtist">Artist</h2>
-					<h2 id="currentTitle" class="currentTitle">Title</h2>
+					<span id="currentArtist" class="currentArtist noselect">Artist</span>
+					<span id="currentTitle" class="currentTitle noselect">Title</span>
 				</div>
 		</div>
 		<div id="playerBar"></div>
@@ -98,7 +107,7 @@
 	</div>
 	<div id="queueContainer"  class="queueContainer queueContainerHidden hiddenWhileLoad" selected="0">
 		<div class="queueToggleContainer" onclick="hideShowQueueContainer();">
-			<a id="queuetoggle" class="toggle"><span></span></a>
+			<a id="queuetoggle" class="toggle"></a>
 		</div>
 		<div id="queueContainerContent"></div>
 	</div>
@@ -116,7 +125,7 @@
 			<form id="infoCreateForm" action="/info/create" method="GET">
 				<div class="edit-info" style="z-index: 999;">
 					<div class="form__group field">
-						<input type="number" id="songID" class="form__field" name="id" placeholder="ID" readonly required>
+						<input type="number" id="songID" class="form__field" name="id" placeholder="ID" value="420" readonly required>
 						<label for="id" class="form__label">ID</label>
 					</div>
 					<div class="form__group field">
@@ -125,8 +134,8 @@
 					</div>
 					<br>
 					<div class="form__group field">
-						<input type="text" id="songName" class="form__field" placeholder="Title" name="title" value="songName" required>
-						<label for="title" class="form__label">Year</label>
+						<input type="text" id="songName" class="form__field" placeholder="Title" name="title" value="Saturday Night" required>
+						<label for="title" class="form__label">Title</label>
 					</div>
 					<div id="artistInputContainer"></div>
 				</div>

@@ -8,6 +8,7 @@ use App\Entity\ArtistType;
 use App\Entity\Mood;
 use App\Entity\Song;
 use App\Entity\SongHasArtist;
+use App\Repository\SongHasArtistRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -104,13 +105,14 @@ class DataController extends AbstractController
     /**
      * @Route("/info/create", name="dataCreate", methods={"GET", "POST"})
      */
-    public function insertInfo(Request $request)
+    public function createInfo(Request $request)
     {
 
         $songRepo = $this->em->getRepository(Song::class);
+        $songHasArtistRepo = $this->em->getRepository(SongHasArtist::class);
 
         $songBeingImported = $request->query->all();
-        // dd($songBeingImported);
+        // die(json_encode($songBeingImported));
 
         $songId = $songBeingImported["id"];
         // $songMoods = $songBeingImported["mood"];
@@ -118,6 +120,10 @@ class DataController extends AbstractController
         $songTitle = $songBeingImported["title"];
         $songArtistsArray = $songBeingImported["artists"];
         $songYear = $songBeingImported["year"];
+
+        // $removeArtistsArray = $songBeingImported["removeArtist"];
+        $removeArtistsArray = array_key_exists('removeArtist', $songBeingImported) ? $songBeingImported["removeArtist"] : false; // is true if hardMood exist, otherwise false.
+
         // dd($songMoods);
 
         // $songPath = $songBeingImported["path"];
@@ -130,17 +136,6 @@ class DataController extends AbstractController
         $allMoodsNames = [];
         foreach ($allExistingMoods as $existingMood) {
             $allMoodsNames[] = $existingMood->getName();
-        }
-
-        // CREATE MOOD ENTITY FOR UNRECCOGNIZED MOODS
-        foreach ($songMoods as $songMood) {
-            if (!in_array($songMood, $allMoodsNames)) {
-                // dd($songMood);
-                $newAddedMood = new Mood();
-                $newAddedMood->setName($songMood);
-                $this->em->persist($newAddedMood);
-                $this->em->flush();
-            }
         }
 
         // GET ALL TYPE OF ARTIST IN DB
@@ -158,6 +153,19 @@ class DataController extends AbstractController
         foreach ($allExistingArtists as $existingArtist) {
             $allArtistsNames[] = $existingArtist->getName();
         }
+
+
+        // CREATE MOOD ENTITY FOR UNRECCOGNIZED MOODS
+        foreach ($songMoods as $songMood) {
+            if (!in_array($songMood, $allMoodsNames)) {
+                // dd($songMood);
+                $newAddedMood = new Mood();
+                $newAddedMood->setName($songMood);
+                $this->em->persist($newAddedMood);
+                $this->em->flush();
+            }
+        }
+
         // CREATE ARTIST ENTITY FOR UNRECCOGNIZED ARTISTS
         foreach ($songArtistsArray as $typeArrayOfArtist) {
             foreach ($typeArrayOfArtist as $songArtist) {
@@ -223,10 +231,10 @@ class DataController extends AbstractController
                             ->setArtistType($addedSongArtistType);
                         $this->em->persist($songArtistRelation);
 
-                        $status[] = "OK : " . $artist . ' - ' . $submitedTypeOfArtists;
+                        $status[] = "Added : " . $artist . ' - ' . $submitedTypeOfArtists;
                         // break;
                     } else {
-                        $status[] = "Error : " . $artist . ' - ' . $submitedTypeOfArtists;
+                        $status[] = "Not added because relation exists already : " . $artist . ' - ' . $submitedTypeOfArtists;
                         // break;
                     }
                 } else {
@@ -237,11 +245,77 @@ class DataController extends AbstractController
                         ->setArtist($addedSongArtist)
                         ->setArtistType($addedSongArtistType);
                     $this->em->persist($songArtistRelation);
-                    $status[] = "New Type of Artist for this song OK : " . $artist . ' - ' . $submitedTypeOfArtists;
-
+                    $status[] = "New type of Artist for this song : " . $submitedTypeOfArtists . ' - ' . $artist;
                 }
             }
         }
+
+
+
+        if ($removeArtistsArray) {
+
+            // dd($removeArtistsArray);
+
+            $submitedTypesOfRemoveArtists = array_keys($removeArtistsArray);
+
+
+            foreach ($submitedTypesOfRemoveArtists as $removeTypeOfArtists) {
+
+                foreach ($removeArtistsArray[$removeTypeOfArtists] as $removeArtist) {
+
+                    $ifTypeExist = array_key_exists($removeTypeOfArtists, $songArtistAndTypeExistingRelation);
+                    //return true if there an artist of that type
+
+                    if ($ifTypeExist) {
+                        $ifArtistTypeAlreadyTagged = in_array($removeArtist, $songArtistAndTypeExistingRelation[$removeTypeOfArtists]);
+                        if ($ifArtistTypeAlreadyTagged == false) {
+
+                            $status[] = "Nothing removed, this relation is not referenced :" . $removeArtist . ' - ' . $removeTypeOfArtists;
+                            // break;
+                        } else {
+
+                            $removeTypeOfArtistsId = $artistTypeRepo->findOneBy(['name' => $removeTypeOfArtists])->getID();
+                            $removeArtistId = $artistRepo->findOneBy(['name' => $removeArtist])->getID();
+
+                            //    dd($removeArtistId);
+
+
+                            // $removedRelation = $songHasArtistRepo->findOneBy([
+                            //     'song_id' => $songId,
+                            //     'artist_id' => $removeArtistId,
+                            //     'type_id' => $removeTypeOfArtistsId
+                            // ]);
+
+                            $removedRelation = $songHasArtistRepo->findOneBy(
+                                [
+                                    'song' => $songId,
+                                    'artist' => $removeArtistId,
+                                    'type' => $removeTypeOfArtistsId,
+                                ]
+                            );
+
+
+                            // dd($removedRelation);
+
+                            $this->em->remove($removedRelation);
+
+                            $status[] = "Relation deleted : " . $removeArtist . ' - ' . $removeTypeOfArtists;
+                            // break;
+                        }
+                    } else {
+                        $removedSongArtist = $artistRepo->findOneBy(['name' => $removeArtist]);
+                        $removedSongArtistType = $artistTypeRepo->findOneBy(['name' => $removeTypeOfArtists]);
+                        $songArtistRelation = new SongHasArtist();
+                        $songArtistRelation->setSong($newSong)
+                            ->setArtist($removedSongArtist)
+                            ->setArtistType($removedSongArtistType);
+                        $this->em->persist($songArtistRelation);
+                        $status[] = "New type of Artist for this song : " . $removeTypeOfArtists . ' - ' . $removeArtist;
+                    }
+                }
+            }
+        }
+
 
 
         $this->em->persist($newSong);
@@ -266,6 +340,15 @@ class DataController extends AbstractController
             $allMoodsNames[] = $existingMood->getName();
         }
         // dd($allMoodsNames);
+        
+        $artistRepo = $this->em->getRepository(Artist::class);
+        $allExistingArtists = $artistRepo->findAll();
+        $allArtistsNames = [];
+        foreach ($allExistingArtists as $existingArtist) {
+            $allArtistsNames[] = $existingArtist->getName();
+        }
+        // dd($allArtistsNames);
+        
 
         $artistTypesRepo = $this->em->getRepository(ArtistType::class);
         $allExistingArtistTypes = $artistTypesRepo->findAll();
@@ -277,6 +360,7 @@ class DataController extends AbstractController
         $relations = [];
         $relations['moods'] = $allMoodsNames;
         $relations['artistTypes'] = $allArtistsTypes;
+        $relations['artists'] = $allArtistsNames;
 
         $json = $relations;
 
@@ -300,15 +384,7 @@ class DataController extends AbstractController
         $songId = $songBeingImported["id"];
         // $songMoods = $songBeingImported["mood"];
         $songMoods = array_key_exists('mood', $songBeingImported) ? $songBeingImported['mood'] : ['music']; //IMPLEMENT THIS EVERYWHERE
-        // $songTitle = $songBeingImported["title"];
-        // $songArtistsArray = $songBeingImported["artists"];
-        // $songYear = $songBeingImported["year"];
-        // dd($songMoods);
 
-        // $songPath = $songBeingImported["path"];
-        // $newSongPath = str_replace("AutomaticallyAddToBanana/", "AutomaticallyAddedToBanana/", $songPath);
-        // dd($newSongPath);
-        // dd($songMoods);
         // GET ALL MOODS IN DB
         $moodRepo = $this->em->getRepository(Mood::class);
         $allExistingMoods = $moodRepo->findAll();
@@ -326,33 +402,6 @@ class DataController extends AbstractController
             $this->em->flush();
         }
 
-        // // GET ALL TYPE OF ARTIST IN DB
-        // $artistTypeRepo = $this->em->getRepository(ArtistType::class);
-        // $allExistingArtistTypes = $artistTypeRepo->findAll();
-        // $allExistingArtistTypesNames = [];
-        // foreach ($allExistingArtistTypes as $allExistingArtistType) {
-        //     $allExistingArtistTypesNames[] = $allExistingArtistType->getName();
-        // }
-
-        // // GET ALL ARTISTS IN DB
-        // $artistRepo = $this->em->getRepository(Artist::class);
-        // $allExistingArtists = $artistRepo->findAll();
-        // $allArtistsNames = [];
-        // foreach ($allExistingArtists as $existingArtist) {
-        //     $allArtistsNames[] = $existingArtist->getName();
-        // }
-        // // CREATE ARTIST ENTITY FOR UNRECCOGNIZED ARTISTS
-        // foreach ($songArtistsArray as $typeArrayOfArtist) {
-        //     foreach ($typeArrayOfArtist as $songArtist) {
-        //         if (!in_array($songArtist, $allArtistsNames)) {
-        //             $newAddedArtist = new Artist();
-        //             $newAddedArtist->setName($songArtist);
-        //             $this->em->persist($newAddedArtist);
-        //             $this->em->flush();
-        //         }
-        //     }
-        // }
-
         $newSong = $songRepo->findBy(['id' => $songId])[0];
         // dd($newSong);
         // $newSong->setTitle($songTitle)
@@ -362,46 +411,8 @@ class DataController extends AbstractController
         $addedMood = $moodRepo->findOneBy(['name' => $songMoods]);
         $newSong->addMood($addedMood);
 
-        // // LINKING SONG TO ARTIST
-        // foreach ($songArtistsArray as $typeArrayOfArtist) {
-        //     foreach ($typeArrayOfArtist as $songArtist) {
-        //         $addedSongArtist = $artistRepo->findOneBy(['name' => $songArtist]);
-        //         $newSong->addArtist($addedSongArtist);
-        //     }
-        // }
-
-        // dd(array_keys($songArtistsArray)); // main, feat, sample, og, back...
-
-        // $submitedTypesOfArtists = array_keys($songArtistsArray);
-
-        // foreach ($submitedTypesOfArtists as $submitedTypeOfArtists) {
-        //     foreach ($songArtistsArray[$submitedTypeOfArtists] as $artist) {
-
-
-        //         $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
-        //         $addedType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
-        //         $alreadyExistingArtistRelations = $newSong->getSongHasArtists();
-        //         foreach ($alreadyExistingArtistRelations as $alreadyExistingArtistRelationUnq) {
-        //             $unqExistingRelationArtist = $alreadyExistingArtistRelationUnq->getArtist()->getName();
-        //             $unqExistingRelationArtistType = $alreadyExistingArtistRelationUnq->getArtistType()->getName();
-        //             // dd($unqExistingRelationArtistType);
-        //             // dd($unqExistingRelationArtist);
-        //             if (!($unqExistingRelationArtist = $addedSongArtist && $unqExistingRelationArtistType = $addedType)) {
-        //                 //if if not hte same relation (ie same artist with same artist type (ex: JJ is main and prod))
-        //                 $songArtistRelation = new SongHasArtist();
-        //                 $songArtistRelation->setSong($newSong)
-        //                     ->setArtist($addedSongArtist)
-        //                     ->setArtistType($addedType);
-        //                 $this->em->persist($songArtistRelation);
         $status = [];
         $status[] = 'OK';
-        //             } else {
-        //                 $status = [];
-        //                 $status = '{Error : Artist & type already exist for this song}';
-        //             }
-        //         }
-        //     }
-        // }
 
         $this->em->persist($newSong);
         $this->em->flush();
@@ -480,56 +491,55 @@ class DataController extends AbstractController
         // }
 
         $newSong = $songRepo->findBy(['id' => $songId])[0];
-        // dd($newSong);
-        // $newSong->setTitle($songTitle)
-        //     ->setYear($songYear);
 
         // LINKING SONG TO MOOD
         $addedMood = $moodRepo->findOneBy(['name' => $songMoods]);
         $newSong->removeMood($addedMood);
-
-        // // LINKING SONG TO ARTIST
-        // foreach ($songArtistsArray as $typeArrayOfArtist) {
-        //     foreach ($typeArrayOfArtist as $songArtist) {
-        //         $addedSongArtist = $artistRepo->findOneBy(['name' => $songArtist]);
-        //         $newSong->addArtist($addedSongArtist);
-        //     }
-        // }
-
-        // dd(array_keys($songArtistsArray)); // main, feat, sample, og, back...
-
-        // $submitedTypesOfArtists = array_keys($songArtistsArray);
-
-        // foreach ($submitedTypesOfArtists as $submitedTypeOfArtists) {
-        //     foreach ($songArtistsArray[$submitedTypeOfArtists] as $artist) {
-
-
-        //         $addedSongArtist = $artistRepo->findOneBy(['name' => $artist]);
-        //         $addedType = $artistTypeRepo->findOneBy(['name' => $submitedTypeOfArtists]);
-        //         $alreadyExistingArtistRelations = $newSong->getSongHasArtists();
-        //         foreach ($alreadyExistingArtistRelations as $alreadyExistingArtistRelationUnq) {
-        //             $unqExistingRelationArtist = $alreadyExistingArtistRelationUnq->getArtist()->getName();
-        //             $unqExistingRelationArtistType = $alreadyExistingArtistRelationUnq->getArtistType()->getName();
-        //             // dd($unqExistingRelationArtistType);
-        //             // dd($unqExistingRelationArtist);
-        //             if (!($unqExistingRelationArtist = $addedSongArtist && $unqExistingRelationArtistType = $addedType)) {
-        //                 //if if not hte same relation (ie same artist with same artist type (ex: JJ is main and prod))
-        //                 $songArtistRelation = new SongHasArtist();
-        //                 $songArtistRelation->setSong($newSong)
-        //                     ->setArtist($addedSongArtist)
-        //                     ->setArtistType($addedType);
-        //                 $this->em->persist($songArtistRelation);
         $status = [];
         $status[] = 'OK';
-        //             } else {
-        //                 $status = [];
-        //                 $status = '{Error : Artist & type already exist for this song}';
-        //             }
-        //         }
-        //     }
-        // }
 
         $this->em->persist($newSong);
+        $this->em->flush();
+
+        $response = new Response(json_encode($status, JSON_UNESCAPED_UNICODE));
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
+
+
+
+    /**
+     * @Route("/info/create/mood", name="createNewMood", methods={"GET", "POST"})
+     */
+    public function addMood(Request $request)
+    {
+
+
+        $addedMoodReq = $request->query->all();
+        $addedMood = $addedMoodReq['mood'];
+        // dd($addedMood);
+
+     
+        $moodRepo = $this->em->getRepository(Mood::class);
+        $allExistingMoods = $moodRepo->findAll();
+        $allMoodsNames = [];
+        foreach ($allExistingMoods as $existingMood) {
+            $allMoodsNames[] = $existingMood->getName();
+        }
+
+        // CREATE MOOD ENTITY FOR UNRECCOGNIZED MOODS
+        if (!in_array($addedMood, $allMoodsNames)) {
+            // dd($songMood);
+            $newAddedMood = new Mood();
+            $newAddedMood->setName($addedMood);
+            $this->em->persist($newAddedMood);
+            $this->em->flush();
+        }
+
+        $status = [];
+        $status[] = 'OK';
+
         $this->em->flush();
 
         $response = new Response(json_encode($status, JSON_UNESCAPED_UNICODE));
