@@ -1,4 +1,8 @@
-## 3.7.0 (xxxx-xx-xx)
+## 3.7.1 (2021-11-05)
+
+* Indicate compatibility with Symfony 6
+
+## 3.7.0 (2021-03-31)
 
 * Use `ActivationStrategy` instead of `actionLevel` when available 
 * Register resettable processors (`ResettableInterface`) for autoconfiguration (tag: `kernel.reset`)

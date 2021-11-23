@@ -18,8 +18,8 @@ use ReflectionProperty;
 use function assert;
 use function class_exists;
 use function constant;
-use function count;
 use function defined;
+use function get_class;
 
 class AttributeDriver extends AnnotationDriver
 {
@@ -36,6 +36,23 @@ class AttributeDriver extends AnnotationDriver
     public function __construct(array $paths)
     {
         parent::__construct(new AttributeReader(), $paths);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isTransient($className)
+    {
+        $classAnnotations = $this->reader->getClassAnnotations(new ReflectionClass($className));
+
+        foreach ($classAnnotations as $a) {
+            $annot = $a instanceof RepeatableAttributeCollection ? $a[0] : $a;
+            if (isset($this->entityAnnotationClasses[get_class($annot)])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function loadMetadataForClass($className, ClassMetadata $metadata): void
@@ -505,11 +522,11 @@ class AttributeDriver extends AnnotationDriver
      *
      * @return mixed[]
      * @psalm-return array{
-     *                   name: string,
+     *                   name: string|null,
      *                   unique: bool,
      *                   nullable: bool,
      *                   onDelete: mixed,
-     *                   columnDefinition: string,
+     *                   columnDefinition: string|null,
      *                   referencedColumnName: string
      *               }
      */

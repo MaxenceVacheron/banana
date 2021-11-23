@@ -51,19 +51,19 @@ class XmlFileLoader extends FileLoader
 
         $this->container->fileExists($path);
 
-        $env = $this->env;
-        $this->env = null;
-        try {
-            $this->loadXml($xml, $path);
-        } finally {
-            $this->env = $env;
-        }
+        $this->loadXml($xml, $path);
 
         if ($this->env) {
             $xpath = new \DOMXPath($xml);
             $xpath->registerNamespace('container', self::NS);
             foreach ($xpath->query(sprintf('//container:when[@env="%s"]', $this->env)) ?: [] as $root) {
-                $this->loadXml($xml, $path, $root);
+                $env = $this->env;
+                $this->env = null;
+                try {
+                    $this->loadXml($xml, $path, $root);
+                } finally {
+                    $this->env = $env;
+                }
             }
         }
     }
@@ -342,7 +342,7 @@ class XmlFileLoader extends FileLoader
                     continue;
                 }
 
-                if (false !== strpos($name, '-') && false === strpos($name, '_') && !\array_key_exists($normalizedName = str_replace('-', '_', $name), $parameters)) {
+                if (str_contains($name, '-') && !str_contains($name, '_') && !\array_key_exists($normalizedName = str_replace('-', '_', $name), $parameters)) {
                     $parameters[$normalizedName] = XmlUtils::phpize($node->nodeValue);
                 }
                 // keep not normalized key
@@ -631,7 +631,7 @@ class XmlFileLoader extends FileLoader
                     array_shift($parts);
                     $locationstart = 'phar:///';
                 }
-            } elseif ('\\' === \DIRECTORY_SEPARATOR && 0 === strpos($location, '\\\\')) {
+            } elseif ('\\' === \DIRECTORY_SEPARATOR && str_starts_with($location, '\\\\')) {
                 $locationstart = '';
             }
             $drive = '\\' === \DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';

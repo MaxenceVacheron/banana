@@ -32,7 +32,7 @@ class UserNotFoundException extends AuthenticationException
     /**
      * Get the user identifier (e.g. username or e-mailaddress).
      */
-    public function getUserIdentifier(): string
+    public function getUserIdentifier(): ?string
     {
         return $this->identifier;
     }
@@ -93,4 +93,7 @@ class UserNotFoundException extends AuthenticationException
         parent::__unserialize($parentData);
     }
 }
-class_alias(UserNotFoundException::class, UsernameNotFoundException::class);
+
+if (!class_exists(UsernameNotFoundException::class, false)) {
+    class_alias(UserNotFoundException::class, UsernameNotFoundException::class);
+}

@@ -53,7 +53,7 @@ abstract class AbstractToken implements TokenInterface
      */
     public function getUsername(/* $legacy = true */)
     {
-        if (1 === func_num_args() && false === func_get_arg(0)) {
+        if (1 === \func_num_args() && false === func_get_arg(0)) {
             return null;
         }
 
@@ -75,7 +75,7 @@ abstract class AbstractToken implements TokenInterface
         }
 
         if ($this->user instanceof UserInterface) {
-            // @deprecated since 5.3, change to $user->getUserIdentifier() in 6.0
+            // @deprecated since Symfony 5.3, change to $user->getUserIdentifier() in 6.0
             return method_exists($this->user, 'getUserIdentifier') ? $this->user->getUserIdentifier() : $this->user->getUsername();
         }
 

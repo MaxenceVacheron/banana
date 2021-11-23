@@ -1,22 +1,6 @@
 <?php
 
-/*
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * This software consists of voluntary contributions made by many individuals
- * and is licensed under the MIT license. For more information, see
- * <http://www.doctrine-project.org>.
- */
+declare(strict_types=1);
 
 namespace Doctrine\ORM\Mapping;
 
@@ -30,7 +14,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\Deprecations\Deprecation;
 use Doctrine\Instantiator\Instantiator;
 use Doctrine\Instantiator\InstantiatorInterface;
-use Doctrine\ORM\Cache\CacheException;
+use Doctrine\ORM\Cache\Exception\CacheException;
+use Doctrine\ORM\Cache\Exception\NonCacheableEntityAssociation;
 use Doctrine\ORM\Id\AbstractIdGenerator;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\Mapping\ReflectionService;
@@ -48,6 +33,7 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_values;
+use function assert;
 use function class_exists;
 use function count;
 use function explode;
@@ -58,7 +44,7 @@ use function is_array;
 use function is_subclass_of;
 use function ltrim;
 use function method_exists;
-use function spl_object_hash;
+use function spl_object_id;
 use function str_replace;
 use function strpos;
 use function strtolower;
@@ -81,7 +67,7 @@ use const PHP_VERSION_ID;
  *    get the whole class name, namespace inclusive, prepended to every property in
  *    the serialized representation).
  *
- * @template T of object
+ * @template-covariant T of object
  * @template-implements ClassMetadata<T>
  */
 class ClassMetadataInfo implements ClassMetadata
@@ -127,7 +113,10 @@ class ClassMetadataInfo implements ClassMetadata
 
     /**
      * TABLE means a separate table is used for id generation.
-     * Offers full portability.
+     * Offers full portability (in that it results in an exception being thrown
+     * no matter the platform).
+     *
+     * @deprecated no replacement planned
      */
     public const GENERATOR_TYPE_TABLE = 3;
 
@@ -148,6 +137,8 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * UUID means that a UUID/GUID expression is used for id generation. Full
      * portability is currently not guaranteed.
+     *
+     * @deprecated use an application-side generator instead
      */
     public const GENERATOR_TYPE_UUID = 6;
 
@@ -625,13 +616,13 @@ class ClassMetadataInfo implements ClassMetadata
      * <code>
      * array(
      *     'sequenceName' => 'name',
-     *     'allocationSize' => 20,
-     *     'initialValue' => 1
+     *     'allocationSize' => '20',
+     *     'initialValue' => '1'
      * )
      * </code>
      *
-     * @var mixed[]
-     * @psalm-var array{sequenceName: string, allocationSize: int, initialValue: int}
+     * @var array<string, mixed>
+     * @psalm-var array{sequenceName: string, allocationSize: string, initialValue: string, quoted?: mixed}
      * @todo Merge with tableGeneratorDefinition into generic generatorDefinition
      */
     public $sequenceGeneratorDefinition;
@@ -640,8 +631,9 @@ class ClassMetadataInfo implements ClassMetadata
      * READ-ONLY: The definition of the table generator of this class. Only used for the
      * TABLE generation strategy.
      *
+     * @deprecated
+     *
      * @var array<string, mixed>
-     * @todo Merge with tableGeneratorDefinition into generic generatorDefinition
      */
     public $tableGeneratorDefinition;
 
@@ -848,7 +840,7 @@ class ClassMetadataInfo implements ClassMetadata
      */
     public function __toString()
     {
-        return self::class . '@' . spl_object_hash($this);
+        return self::class . '@' . spl_object_id($this);
     }
 
     /**
@@ -986,12 +978,14 @@ class ClassMetadataInfo implements ClassMetadata
 
         foreach ($this->embeddedClasses as $property => $embeddedClass) {
             if (isset($embeddedClass['declaredField'])) {
+                $childProperty = $reflService->getAccessibleProperty(
+                    $this->embeddedClasses[$embeddedClass['declaredField']]['class'],
+                    $embeddedClass['originalField']
+                );
+                assert($childProperty !== null);
                 $parentReflFields[$property] = new ReflectionEmbeddedProperty(
                     $parentReflFields[$embeddedClass['declaredField']],
-                    $reflService->getAccessibleProperty(
-                        $this->embeddedClasses[$embeddedClass['declaredField']]['class'],
-                        $embeddedClass['originalField']
-                    ),
+                    $childProperty,
                     $this->embeddedClasses[$embeddedClass['declaredField']]['class']
                 );
 
@@ -1152,7 +1146,7 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * @param string $fieldName
      * @param array  $cache
-     * @psalm-param array{usage?: int, region?: string} $cache
+     * @psalm-param array{usage?: int, region?: string|null} $cache
      *
      * @return int[]|string[]
      * @psalm-return array{usage: int, region: string|null}
@@ -1314,7 +1308,8 @@ class ClassMetadataInfo implements ClassMetadata
      * @param string $fieldName The field name that represents the association in
      *                          the object model.
      *
-     * @psalm-return array<string, mixed> The mapping.
+     * @return mixed[] The mapping.
+     * @psalm-return array<string, mixed>
      *
      * @throws MappingException
      */
@@ -1388,6 +1383,7 @@ class ClassMetadataInfo implements ClassMetadata
      *
      * @param string $queryName The query name.
      *
+     * @return mixed[]
      * @psalm-return array<string, mixed>
      *
      * @throws MappingException
@@ -1575,7 +1571,7 @@ class ClassMetadataInfo implements ClassMetadata
                 throw MappingException::cannotVersionIdField($this->name, $mapping['fieldName']);
             }
 
-            if (! in_array($mapping['fieldName'], $this->identifier)) {
+            if (! in_array($mapping['fieldName'], $this->identifier, true)) {
                 $this->identifier[] = $mapping['fieldName'];
             }
 
@@ -1664,7 +1660,7 @@ class ClassMetadataInfo implements ClassMetadata
                 throw MappingException::illegalOrphanRemovalOnIdentifierAssociation($this->name, $mapping['fieldName']);
             }
 
-            if (! in_array($mapping['fieldName'], $this->identifier)) {
+            if (! in_array($mapping['fieldName'], $this->identifier, true)) {
                 if (isset($mapping['joinColumns']) && count($mapping['joinColumns']) >= 2) {
                     throw MappingException::cannotMapCompositePrimaryKeyEntitiesAsForeignId(
                         $mapping['targetEntity'],
@@ -1683,7 +1679,10 @@ class ClassMetadataInfo implements ClassMetadata
             }
 
             if ($this->cache && ! isset($mapping['cache'])) {
-                throw CacheException::nonCacheableEntityAssociation($this->name, $mapping['fieldName']);
+                throw NonCacheableEntityAssociation::fromEntityAndField(
+                    $this->name,
+                    $mapping['fieldName']
+                );
             }
         }
 
@@ -1722,7 +1721,7 @@ class ClassMetadataInfo implements ClassMetadata
         $cascades = isset($mapping['cascade']) ? array_map('strtolower', $mapping['cascade']) : [];
 
         $allCascades = ['remove', 'persist', 'refresh', 'merge', 'detach'];
-        if (in_array('all', $cascades)) {
+        if (in_array('all', $cascades, true)) {
             $cascades = $allCascades;
         } elseif (count($cascades) !== count(array_intersect($cascades, $allCascades))) {
             throw MappingException::invalidCascadeOption(
@@ -1733,11 +1732,11 @@ class ClassMetadataInfo implements ClassMetadata
         }
 
         $mapping['cascade']          = $cascades;
-        $mapping['isCascadeRemove']  = in_array('remove', $cascades);
-        $mapping['isCascadePersist'] = in_array('persist', $cascades);
-        $mapping['isCascadeRefresh'] = in_array('refresh', $cascades);
-        $mapping['isCascadeMerge']   = in_array('merge', $cascades);
-        $mapping['isCascadeDetach']  = in_array('detach', $cascades);
+        $mapping['isCascadeRemove']  = in_array('remove', $cascades, true);
+        $mapping['isCascadePersist'] = in_array('persist', $cascades, true);
+        $mapping['isCascadeRefresh'] = in_array('refresh', $cascades, true);
+        $mapping['isCascadeMerge']   = in_array('merge', $cascades, true);
+        $mapping['isCascadeDetach']  = in_array('detach', $cascades, true);
 
         return $mapping;
     }
@@ -2235,11 +2234,20 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * Checks whether the class uses a table for id generation.
      *
-     * @return bool TRUE if the class uses the TABLE generator, FALSE otherwise.
+     * @deprecated
+     *
+     * @return false
      */
     public function isIdGeneratorTable()
     {
-        return $this->generatorType === self::GENERATOR_TYPE_TABLE;
+        Deprecation::trigger(
+            'doctrine/orm',
+            'https://github.com/doctrine/orm/pull/9046',
+            '%s is deprecated',
+            __METHOD__
+        );
+
+        return false;
     }
 
     /**
@@ -2256,10 +2264,19 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * Checks whether the class use a UUID for id generation.
      *
+     * @deprecated
+     *
      * @return bool
      */
     public function isIdentifierUuid()
     {
+        Deprecation::trigger(
+            'doctrine/orm',
+            'https://github.com/doctrine/orm/pull/9046',
+            '%s is deprecated',
+            __METHOD__
+        );
+
         return $this->generatorType === self::GENERATOR_TYPE_UUID;
     }
 
@@ -2951,6 +2968,7 @@ class ClassMetadataInfo implements ClassMetadata
      *
      * @param string $event
      *
+     * @return string[]
      * @psalm-return list<string>
      */
     public function getLifecycleCallbacks($event)
@@ -2978,7 +2996,7 @@ class ClassMetadataInfo implements ClassMetadata
             );
         }
 
-        if (isset($this->lifecycleCallbacks[$event]) && in_array($callback, $this->lifecycleCallbacks[$event])) {
+        if (isset($this->lifecycleCallbacks[$event]) && in_array($callback, $this->lifecycleCallbacks[$event], true)) {
             return;
         }
 
@@ -3026,7 +3044,7 @@ class ClassMetadataInfo implements ClassMetadata
             throw MappingException::entityListenerMethodNotFound($class, $method, $this->name);
         }
 
-        if (isset($this->entityListeners[$eventName]) && in_array($listener, $this->entityListeners[$eventName])) {
+        if (isset($this->entityListeners[$eventName]) && in_array($listener, $this->entityListeners[$eventName], true)) {
             throw MappingException::duplicateEntityListener($class, $method, $this->name);
         }
 
@@ -3038,7 +3056,8 @@ class ClassMetadataInfo implements ClassMetadata
      *
      * @see getDiscriminatorColumn()
      *
-     * @psalm-param array<string, mixed> $columnDef
+     * @param mixed[]|null $columnDef
+     * @psalm-param array<string, mixed>|null $columnDef
      *
      * @return void
      *
@@ -3063,7 +3082,7 @@ class ClassMetadataInfo implements ClassMetadata
                 $columnDef['type'] = 'string';
             }
 
-            if (in_array($columnDef['type'], ['boolean', 'array', 'object', 'datetime', 'time', 'date'])) {
+            if (in_array($columnDef['type'], ['boolean', 'array', 'object', 'datetime', 'time', 'date'], true)) {
                 throw MappingException::invalidDiscriminatorColumnType($this->name, $columnDef['type']);
             }
 
@@ -3090,6 +3109,7 @@ class ClassMetadataInfo implements ClassMetadata
      * Adds one entry of the discriminator map with a new class and corresponding name.
      *
      * @param string $name
+     * @param string $className
      * @psalm-param class-string $className
      *
      * @return void
@@ -3113,7 +3133,7 @@ class ClassMetadataInfo implements ClassMetadata
             throw MappingException::invalidClassInDiscriminatorMap($className, $this->name);
         }
 
-        if (is_subclass_of($className, $this->name) && ! in_array($className, $this->subClasses)) {
+        if (is_subclass_of($className, $this->name) && ! in_array($className, $this->subClasses, true)) {
             $this->subClasses[] = $className;
         }
     }
@@ -3274,7 +3294,7 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * Sets definition.
      *
-     * @psalm-param array<string, string> $definition
+     * @psalm-param array<string, string|null> $definition
      *
      * @return void
      */
@@ -3296,7 +3316,7 @@ class ClassMetadataInfo implements ClassMetadata
      * )
      * </code>
      *
-     * @psalm-param array<string, string> $definition
+     * @psalm-param array{sequenceName?: string, allocationSize?: int|string, initialValue?: int|string, quoted?: mixed} $definition
      *
      * @return void
      *
@@ -3313,13 +3333,16 @@ class ClassMetadataInfo implements ClassMetadata
             $definition['quoted']       = true;
         }
 
-        if (! isset($definition['allocationSize']) || trim($definition['allocationSize']) === '') {
+        if (! isset($definition['allocationSize']) || trim((string) $definition['allocationSize']) === '') {
             $definition['allocationSize'] = '1';
         }
 
-        if (! isset($definition['initialValue']) || trim($definition['initialValue']) === '') {
+        if (! isset($definition['initialValue']) || trim((string) $definition['initialValue']) === '') {
             $definition['initialValue'] = '1';
         }
+
+        $definition['allocationSize'] = (string) $definition['allocationSize'];
+        $definition['initialValue']   = (string) $definition['initialValue'];
 
         $this->sequenceGeneratorDefinition = $definition;
     }
@@ -3340,7 +3363,7 @@ class ClassMetadataInfo implements ClassMetadata
         $this->versionField = $mapping['fieldName'];
 
         if (! isset($mapping['default'])) {
-            if (in_array($mapping['type'], ['integer', 'bigint', 'smallint'])) {
+            if (in_array($mapping['type'], ['integer', 'bigint', 'smallint'], true)) {
                 $mapping['default'] = 1;
             } elseif ($mapping['type'] === 'datetime') {
                 $mapping['default'] = 'CURRENT_TIMESTAMP';
@@ -3404,6 +3427,11 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * {@inheritDoc}
      *
+     * @param string $assocName
+     *
+     * @return string
+     * @psalm-return class-string
+     *
      * @throws InvalidArgumentException
      */
     public function getAssociationTargetClass($assocName)
@@ -3430,6 +3458,7 @@ class ClassMetadataInfo implements ClassMetadata
      *
      * @param AbstractPlatform $platform
      *
+     * @return string[]
      * @psalm-return list<string>
      */
     public function getQuotedIdentifierColumnNames($platform)
@@ -3532,6 +3561,7 @@ class ClassMetadataInfo implements ClassMetadata
     /**
      * @param string $targetClass
      *
+     * @return mixed[][]
      * @psalm-return array<string, array<string, mixed>>
      */
     public function getAssociationsByTargetClass($targetClass)

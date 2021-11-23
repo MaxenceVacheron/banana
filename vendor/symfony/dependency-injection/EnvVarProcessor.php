@@ -130,7 +130,7 @@ class EnvVarProcessor implements EnvVarProcessorInterface
             $env = $getEnv($name);
         } elseif (isset($_ENV[$name])) {
             $env = $_ENV[$name];
-        } elseif (isset($_SERVER[$name]) && 0 !== strpos($name, 'HTTP_')) {
+        } elseif (isset($_SERVER[$name]) && !str_starts_with($name, 'HTTP_')) {
             $env = $_SERVER[$name];
         } elseif (false === ($env = getenv($name)) || null === $env) { // null is a possible value because of thread safety issues
             foreach ($this->loadedVars as $vars) {
@@ -192,7 +192,7 @@ class EnvVarProcessor implements EnvVarProcessorInterface
             return (string) $env;
         }
 
-        if (in_array($prefix, ['bool', 'not'], true)) {
+        if (\in_array($prefix, ['bool', 'not'], true)) {
             $env = (bool) (filter_var($env, \FILTER_VALIDATE_BOOLEAN) ?: filter_var($env, \FILTER_VALIDATE_INT) ?: filter_var($env, \FILTER_VALIDATE_FLOAT));
 
             return 'not' === $prefix ? !$env : $env;
@@ -258,10 +258,8 @@ class EnvVarProcessor implements EnvVarProcessorInterface
                 'fragment' => null,
             ];
 
-            if (null !== $parsedEnv['path']) {
-                // remove the '/' separator
-                $parsedEnv['path'] = '/' === $parsedEnv['path'] ? null : substr($parsedEnv['path'], 1);
-            }
+            // remove the '/' separator
+            $parsedEnv['path'] = '/' === ($parsedEnv['path'] ?? '/') ? '' : substr($parsedEnv['path'], 1);
 
             return $parsedEnv;
         }

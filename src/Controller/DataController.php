@@ -37,20 +37,17 @@ class DataController extends AbstractController
 
 
         $askedQuery = $request->query->all();
-        // dd($askedQuery);
+
 
         $askedMood = array_key_exists('mood', $askedQuery) ? $askedQuery['mood'] : null; //IMPLEMENT THIS EVERYWHERE
         $askedArtist = array_key_exists('artist', $askedQuery) ? $askedQuery['artist'] : null;
         $askedAlbum = array_key_exists('album', $askedQuery) ? $askedQuery['album'] : null;
         $askedSong = array_key_exists('song', $askedQuery) ? $askedQuery['song'] : null;
-        // dd($askedSong);
 
         if ($askedSong) {
             $songInfo = [];
 
             $_askedSong = $songRepo->findOneBy(['id' => $askedSong]);
-            // dd($_askedSong);
-
             $artistsArray = [];
             $songHasArt = $_askedSong->getSongHasArtists();
             foreach ($songHasArt as $sameSongDifArtist) {
@@ -85,7 +82,6 @@ class DataController extends AbstractController
                 [
                     'id' => $_askedSong->getId(),
                     'path' => substr($_askedSong->getPath(), 20),
-                    // 'path' => $_askedSong->getPath(),
                     'title' => $_askedSong->getTitle(),
                     'year' => $_askedSong->getYear(),
                     'artists' => $artistsArray,

@@ -62,6 +62,7 @@ class PassConfig
             new AutowireRequiredMethodsPass(),
             new AutowireRequiredPropertiesPass(),
             new ResolveBindingsPass(),
+            new ServiceLocatorTagPass(),
             new DecoratorServicePass(),
             new CheckDefinitionValidityPass(),
             new AutowirePass(false),

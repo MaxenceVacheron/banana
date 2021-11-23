@@ -81,8 +81,8 @@ class UsernamePasswordJsonAuthenticationListener extends AbstractListener
 
     public function supports(Request $request): ?bool
     {
-        if (false === strpos($request->getRequestFormat() ?? '', 'json')
-            && false === strpos($request->getContentType() ?? '', 'json')
+        if (!str_contains($request->getRequestFormat() ?? '', 'json')
+            && !str_contains($request->getContentType() ?? '', 'json')
         ) {
             return false;
         }
@@ -153,7 +153,7 @@ class UsernamePasswordJsonAuthenticationListener extends AbstractListener
     private function onSuccess(Request $request, TokenInterface $token): ?Response
     {
         if (null !== $this->logger) {
-            // @deprecated since 5.3, change to $token->getUserIdentifier() in 6.0
+            // @deprecated since Symfony 5.3, change to $token->getUserIdentifier() in 6.0
             $this->logger->info('User has been authenticated successfully.', ['username' => method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()]);
         }
 

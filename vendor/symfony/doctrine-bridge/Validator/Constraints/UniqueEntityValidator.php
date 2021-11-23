@@ -12,6 +12,8 @@
 namespace Symfony\Bridge\Doctrine\Validator\Constraints;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\Mapping\ClassMetadata;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
@@ -163,7 +165,7 @@ class UniqueEntityValidator extends ConstraintValidator
             return;
         }
 
-        $errorPath = null !== $constraint->errorPath ? $constraint->errorPath : $fields[0];
+        $errorPath = $constraint->errorPath ?? $fields[0];
         $invalidValue = $criteria[$errorPath] ?? $criteria[$fields[0]];
 
         $this->context->buildViolation($constraint->message)
@@ -175,7 +177,7 @@ class UniqueEntityValidator extends ConstraintValidator
             ->addViolation();
     }
 
-    private function formatWithIdentifiers($em, $class, $value)
+    private function formatWithIdentifiers(ObjectManager $em, ClassMetadata $class, $value)
     {
         if (!\is_object($value) || $value instanceof \DateTimeInterface) {
             return $this->formatValue($value, self::PRETTY_DATE);

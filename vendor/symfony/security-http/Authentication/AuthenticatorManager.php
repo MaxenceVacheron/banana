@@ -57,7 +57,7 @@ class AuthenticatorManager implements AuthenticatorManagerInterface, UserAuthent
     /**
      * @param AuthenticatorInterface[] $authenticators
      */
-    public function __construct(iterable $authenticators, TokenStorageInterface $tokenStorage, EventDispatcherInterface $eventDispatcher, string $firewallName, ?LoggerInterface $logger = null, bool $eraseCredentials = true, bool $hideUserNotFoundExceptions = true, array $requiredBadges = [])
+    public function __construct(iterable $authenticators, TokenStorageInterface $tokenStorage, EventDispatcherInterface $eventDispatcher, string $firewallName, LoggerInterface $logger = null, bool $eraseCredentials = true, bool $hideUserNotFoundExceptions = true, array $requiredBadges = [])
     {
         $this->authenticators = $authenticators;
         $this->tokenStorage = $tokenStorage;
@@ -75,7 +75,7 @@ class AuthenticatorManager implements AuthenticatorManagerInterface, UserAuthent
     public function authenticateUser(UserInterface $user, AuthenticatorInterface $authenticator, Request $request, array $badges = []): ?Response
     {
         // create an authenticated token for the User
-        // @deprecated since 5.3, change to $user->getUserIdentifier() in 6.0
+        // @deprecated since Symfony 5.3, change to $user->getUserIdentifier() in 6.0
         $token = $authenticator->createAuthenticatedToken($passport = new SelfValidatingPassport(new UserBadge(method_exists($user, 'getUserIdentifier') ? $user->getUserIdentifier() : $user->getUsername(), function () use ($user) { return $user; }), $badges), $this->firewallName);
 
         // announce the authenticated token
@@ -229,8 +229,9 @@ class AuthenticatorManager implements AuthenticatorManagerInterface, UserAuthent
 
     private function handleAuthenticationSuccess(TokenInterface $authenticatedToken, PassportInterface $passport, Request $request, AuthenticatorInterface $authenticator): ?Response
     {
-        // @deprecated since 5.3
-        if (!method_exists($authenticatedToken->getUser(), 'getUserIdentifier')) {
+        // @deprecated since Symfony 5.3
+        $user = $authenticatedToken->getUser();
+        if ($user instanceof UserInterface && !method_exists($user, 'getUserIdentifier')) {
             trigger_deprecation('symfony/security-core', '5.3', 'Not implementing method "getUserIdentifier(): string" in user class "%s" is deprecated. This method will replace "getUsername()" in Symfony 6.0.', get_debug_type($authenticatedToken->getUser()));
         }
 

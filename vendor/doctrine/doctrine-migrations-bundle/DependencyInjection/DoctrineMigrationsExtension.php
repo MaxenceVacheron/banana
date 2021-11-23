@@ -38,7 +38,7 @@ class DoctrineMigrationsExtension extends Extension
      *
      * @param mixed[][] $configs
      *
-     * @psalm-param array<string, array<string, array<string, string>|string>>> $configs
+     * @psalm-param array<string, array<string, array<string, array<string, string>|string>|string>> $configs
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -76,6 +76,8 @@ class DoctrineMigrationsExtension extends Extension
         if ($config['enable_profiler']) {
             $this->registerCollector($container);
         }
+
+        $configurationDefinition->addMethodCall('setTransactional', [$config['transactional']]);
 
         $diDefinition = $container->getDefinition('doctrine.migrations.dependency_factory');
 

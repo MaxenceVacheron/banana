@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    # restart: always
+    restart: always
     volumes:
       - ./:/var/www/html
       - ./docker/conf/apache2/:/etc/apache2/sites-available/
@@ -12,10 +12,9 @@ services:
       - banana-api
     ports:
       - 80:80
-      - 443:443
 
   db:
-    image: yobasystems/alpine-mariadb:10.4.17
+    image: yobasystems/alpine-mariadb:10.4.17 #SPECIFIC IMAGE FOR ARM (RASPBERRY PI) ARCHITECTURE
     container_name: dbanana
     restart: always
     environment:
@@ -39,7 +38,6 @@ services:
       - 8080:80
     environment:
       - PMA_ARBITRARY=1
-      - UPLOAD_LIMIT=1G
     networks:
       - banana-api
 

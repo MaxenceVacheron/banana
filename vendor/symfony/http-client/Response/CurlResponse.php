@@ -247,13 +247,15 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
 
     public function __destruct()
     {
-        curl_setopt($this->handle, \CURLOPT_VERBOSE, false);
+        try {
+            if (null === $this->timeout) {
+                return; // Unused pushed response
+            }
 
-        if (null === $this->timeout) {
-            return; // Unused pushed response
+            $this->doDestruct();
+        } finally {
+            curl_setopt($this->handle, \CURLOPT_VERBOSE, false);
         }
-
-        $this->doDestruct();
     }
 
     /**
@@ -313,6 +315,10 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
                     }
                 }
 
+                if (\CURLE_RECV_ERROR === $result && 'H' === $waitFor[0] && 400 <= ($responses[(int) $ch]->info['http_code'] ?? 0)) {
+                    $multi->handlesActivity[$id][] = new FirstChunk();
+                }
+
                 $multi->handlesActivity[$id][] = null;
                 $multi->handlesActivity[$id][] = \in_array($result, [\CURLE_OK, \CURLE_TOO_MANY_REDIRECTS], true) || '_0' === $waitFor || curl_getinfo($ch, \CURLINFO_SIZE_DOWNLOAD) === curl_getinfo($ch, \CURLINFO_CONTENT_LENGTH_DOWNLOAD) ? null : new TransportException(sprintf('%s for "%s".', curl_strerror($result), curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL)));
             }
@@ -353,7 +359,7 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
         }
 
         if ($multi->pauseExpiries && 0 < $timeout -= microtime(true) - $now) {
-            usleep(1E6 * $timeout);
+            usleep((int) (1E6 * $timeout));
         }
 
         return 0;
@@ -362,7 +368,7 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
     /**
      * Parses header lines as curl yields them to us.
      */
-    private static function parseHeaderLine($ch, string $data, array &$info, array &$headers, ?array $options, CurlClientState $multi, int $id, ?string &$location, ?callable $resolveRedirect, ?LoggerInterface $logger, &$content = null): int
+    private static function parseHeaderLine($ch, string $data, array &$info, array &$headers, ?array $options, CurlClientState $multi, int $id, ?string &$location, ?callable $resolveRedirect, ?LoggerInterface $logger): int
     {
         $waitFor = @curl_getinfo($ch, \CURLINFO_PRIVATE) ?: '_0';
 
@@ -381,7 +387,7 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
                 return \strlen($data);
             }
 
-            if (0 !== strpos($data, 'HTTP/')) {
+            if (!str_starts_with($data, 'HTTP/')) {
                 if (0 === stripos($data, 'Location:')) {
                     $location = trim(substr($data, 9));
                 }

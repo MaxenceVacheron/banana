@@ -95,7 +95,7 @@ class ContextListener extends AbstractListener
         $request = $event->getRequest();
         $session = $request->hasPreviousSession() && $request->hasSession() ? $request->getSession() : null;
 
-        $request->attributes->set('_security_firewall_run', true);
+        $request->attributes->set('_security_firewall_run', $this->sessionKey);
 
         if (null !== $session) {
             $usageIndexValue = $session instanceof Session ? $usageIndexReference = &$session->getUsageIndex() : 0;
@@ -169,7 +169,7 @@ class ContextListener extends AbstractListener
 
         $request = $event->getRequest();
 
-        if (!$request->hasSession() || !$request->attributes->get('_security_firewall_run', false)) {
+        if (!$request->hasSession() || $request->attributes->get('_security_firewall_run') !== $this->sessionKey) {
             return;
         }
 
@@ -234,7 +234,7 @@ class ContextListener extends AbstractListener
                     $userDeauthenticated = true;
 
                     if (null !== $this->logger) {
-                        // @deprecated since 5.3, change to $refreshedUser->getUserIdentifier() in 6.0
+                        // @deprecated since Symfony 5.3, change to $refreshedUser->getUserIdentifier() in 6.0
                         $this->logger->debug('Cannot refresh token because user has changed.', ['username' => method_exists($refreshedUser, 'getUserIdentifier') ? $refreshedUser->getUserIdentifier() : $refreshedUser->getUsername(), 'provider' => \get_class($provider)]);
                     }
 
@@ -244,12 +244,13 @@ class ContextListener extends AbstractListener
                 $token->setUser($refreshedUser);
 
                 if (null !== $this->logger) {
-                    // @deprecated since 5.3, change to $refreshedUser->getUserIdentifier() in 6.0
+                    // @deprecated since Symfony 5.3, change to $refreshedUser->getUserIdentifier() in 6.0
                     $context = ['provider' => \get_class($provider), 'username' => method_exists($refreshedUser, 'getUserIdentifier') ? $refreshedUser->getUserIdentifier() : $refreshedUser->getUsername()];
 
                     if ($token instanceof SwitchUserToken) {
-                        // @deprecated since 5.3, change to $token->getUserIdentifier() in 6.0
-                        $context['impersonator_username'] = method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getOriginalToken()->getUsername();
+                        $originalToken = $token->getOriginalToken();
+                        // @deprecated since Symfony 5.3, change to $originalToken->getUserIdentifier() in 6.0
+                        $context['impersonator_username'] = method_exists($originalToken, 'getUserIdentifier') ? $originalToken->getUserIdentifier() : $originalToken->getUsername();
                     }
 
                     $this->logger->debug('User was reloaded from a user provider.', $context);
@@ -319,7 +320,7 @@ class ContextListener extends AbstractListener
     /**
      * @internal
      */
-    public static function handleUnserializeCallback($class)
+    public static function handleUnserializeCallback(string $class)
     {
         throw new \ErrorException('Class not found: '.$class, 0x37313bc);
     }

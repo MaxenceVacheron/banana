@@ -98,12 +98,10 @@ final class UserClassBuilder
             );
         }
 
-        $getterIdentifierName = 'getUsername';
-
         // Check if we're using Symfony 5.3+ - UserInterface::getUsername() was replaced with UserInterface::getUserIdentifier()
-        if (class_exists(InMemoryUser::class)) {
-            $getterIdentifierName = 'getUserIdentifier';
-        }
+        $symfony53GTE = class_exists(InMemoryUser::class);
+        $symfony6GTE = !method_exists(UserInterface::class, 'getSalt');
+        $getterIdentifierName = $symfony53GTE ? 'getUserIdentifier' : 'getUsername';
 
         // define getUsername (if it was defined above, this will override)
         $manipulator->addAccessorMethod(
@@ -118,9 +116,21 @@ final class UserClassBuilder
             ],
             true
         );
+
+        if ($symfony53GTE && !$symfony6GTE) {
+            // also add the deprecated getUsername method
+            $manipulator->addAccessorMethod(
+                $userClassConfig->getIdentityPropertyName(),
+                'getUsername',
+                'string',
+                false,
+                ['@deprecated since Symfony 5.3, use getUserIdentifier instead'],
+                true
+            );
+        }
     }
 
-    private function addGetRoles(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig)
+    private function addGetRoles(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig): void
     {
         if ($userClassConfig->isEntity()) {
             // add entity property
@@ -197,7 +207,7 @@ final class UserClassBuilder
         $manipulator->addMethodBuilder($builder);
     }
 
-    private function addGetPassword(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig)
+    private function addGetPassword(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig): void
     {
         $seeInterface = interface_exists(PasswordAuthenticatedUserInterface::class) ? '@see PasswordAuthenticatedUserInterface' : '@see UserInterface';
 
@@ -266,7 +276,7 @@ final class UserClassBuilder
         );
     }
 
-    private function addGetSalt(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig)
+    private function addGetSalt(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig): void
     {
         if ($userClassConfig->hasPassword()) {
             $methodDescription = [
@@ -304,7 +314,7 @@ final class UserClassBuilder
         $manipulator->addMethodBuilder($builder);
     }
 
-    private function addEraseCredentials(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig)
+    private function addEraseCredentials(ClassSourceManipulator $manipulator, UserClassConfiguration $userClassConfig): void
     {
         // add eraseCredentials: always empty
         $builder = $manipulator->createMethodBuilder(
