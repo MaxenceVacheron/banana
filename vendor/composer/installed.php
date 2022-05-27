@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'a45ba60f91dfedbaed5806dce2b39e45d7873ae4',
+        'reference' => '4e291ac0008b94fa44147b06b173aeb79f845014',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'a45ba60f91dfedbaed5806dce2b39e45d7873ae4',
+            'reference' => '4e291ac0008b94fa44147b06b173aeb79f845014',
             'dev_requirement' => false,
         ),
         'doctrine/annotations' => array(
@@ -170,6 +170,15 @@
             'install_path' => __DIR__ . '/../friendsofphp/proxy-manager-lts',
             'aliases' => array(),
             'reference' => '8419f0158715b30d4b99a5bd37c6a39671994ad7',
+            'dev_requirement' => false,
+        ),
+        'james-heinrich/getid3' => array(
+            'pretty_version' => 'v1.9.21',
+            'version' => '1.9.21.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../james-heinrich/getid3',
+            'aliases' => array(),
+            'reference' => '36f5dabb1325415a4b07a401113f8db2eb81eca1',
             'dev_requirement' => false,
         ),
         'laminas/laminas-code' => array(
