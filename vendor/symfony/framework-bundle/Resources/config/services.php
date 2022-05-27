@@ -34,6 +34,7 @@ use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 use Symfony\Component\HttpKernel\EventListener\LocaleAwareListener;
 use Symfony\Component\HttpKernel\HttpCache\Store;
+use Symfony\Component\HttpKernel\HttpCache\StoreInterface;
 use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -104,6 +105,7 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 param('kernel.cache_dir').'/http_cache',
             ])
+        ->alias(StoreInterface::class, 'http_cache.store')
 
         ->set('url_helper', UrlHelper::class)
             ->args([
@@ -122,11 +124,9 @@ return static function (ContainerConfigurator $container) {
             ->tag('container.no_preload')
 
         ->set('cache_clearer', ChainCacheClearer::class)
-            ->public()
             ->args([
                 tagged_iterator('kernel.cache_clearer'),
             ])
-            ->tag('container.private', ['package' => 'symfony/framework-bundle', 'version' => '5.2'])
 
         ->set('kernel')
             ->synthetic()
@@ -134,8 +134,6 @@ return static function (ContainerConfigurator $container) {
         ->alias(KernelInterface::class, 'kernel')
 
         ->set('filesystem', Filesystem::class)
-            ->public()
-            ->tag('container.private', ['package' => 'symfony/framework-bundle', 'version' => '5.2'])
         ->alias(Filesystem::class, 'filesystem')
 
         ->set('file_locator', FileLocator::class)

@@ -12,12 +12,10 @@
 namespace Symfony\Bundle\FrameworkBundle\CacheWarmer;
 
 use Doctrine\Common\Annotations\AnnotationException;
-use Doctrine\Common\Annotations\CachedReader;
 use Doctrine\Common\Annotations\PsrCachedReader;
 use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
-use Symfony\Component\Cache\DoctrineProvider;
 
 /**
  * Warms up annotation caches for classes found in composer's autoload class map
@@ -28,8 +26,8 @@ use Symfony\Component\Cache\DoctrineProvider;
 class AnnotationsCacheWarmer extends AbstractPhpFileCacheWarmer
 {
     private $annotationReader;
-    private $excludeRegexp;
-    private $debug;
+    private ?string $excludeRegexp;
+    private bool $debug;
 
     /**
      * @param string $phpArrayFile The PHP file where annotations are cached
@@ -45,7 +43,7 @@ class AnnotationsCacheWarmer extends AbstractPhpFileCacheWarmer
     /**
      * {@inheritdoc}
      */
-    protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter)
+    protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter): bool
     {
         $annotatedClassPatterns = $cacheDir.'/annotations.map';
 
@@ -54,10 +52,7 @@ class AnnotationsCacheWarmer extends AbstractPhpFileCacheWarmer
         }
 
         $annotatedClasses = include $annotatedClassPatterns;
-        $reader = class_exists(PsrCachedReader::class)
-            ? new PsrCachedReader($this->annotationReader, $arrayAdapter, $this->debug)
-            : new CachedReader($this->annotationReader, new DoctrineProvider($arrayAdapter), $this->debug)
-        ;
+        $reader = new PsrCachedReader($this->annotationReader, $arrayAdapter, $this->debug);
 
         foreach ($annotatedClasses as $class) {
             if (null !== $this->excludeRegexp && preg_match($this->excludeRegexp, $class)) {
@@ -76,7 +71,7 @@ class AnnotationsCacheWarmer extends AbstractPhpFileCacheWarmer
     /**
      * @return string[] A list of classes to preload on PHP 7.4+
      */
-    protected function warmUpPhpArrayAdapter(PhpArrayAdapter $phpArrayAdapter, array $values)
+    protected function warmUpPhpArrayAdapter(PhpArrayAdapter $phpArrayAdapter, array $values): array
     {
         // make sure we don't cache null values
         $values = array_filter($values, function ($val) { return null !== $val; });

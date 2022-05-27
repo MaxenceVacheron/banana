@@ -93,12 +93,12 @@ class XmlDescriptor extends Descriptor
         $this->writeDocument($this->getEventDispatcherListenersDocument($eventDispatcher, $options));
     }
 
-    protected function describeCallable($callable, array $options = [])
+    protected function describeCallable(mixed $callable, array $options = [])
     {
         $this->writeDocument($this->getCallableDocument($callable));
     }
 
-    protected function describeContainerParameter($parameter, array $options = [])
+    protected function describeContainerParameter(mixed $parameter, array $options = [])
     {
         $this->writeDocument($this->getContainerParameterDocument($parameter, $options));
     }
@@ -419,6 +419,9 @@ class XmlDescriptor extends Descriptor
                 foreach ($this->getArgumentNodes($argument, $dom) as $childArgumentXML) {
                     $argumentXML->appendChild($childArgumentXML);
                 }
+            } elseif ($argument instanceof \UnitEnum) {
+                $argumentXML->setAttribute('type', 'constant');
+                $argumentXML->appendChild(new \DOMText(ltrim(var_export($argument, true), '\\')));
             } else {
                 $argumentXML->appendChild(new \DOMText($argument));
             }
@@ -444,7 +447,7 @@ class XmlDescriptor extends Descriptor
         return $dom;
     }
 
-    private function getContainerParameterDocument($parameter, array $options = []): \DOMDocument
+    private function getContainerParameterDocument(mixed $parameter, array $options = []): \DOMDocument
     {
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->appendChild($parameterXML = $dom->createElement('parameter'));
@@ -493,7 +496,7 @@ class XmlDescriptor extends Descriptor
         }
     }
 
-    private function getCallableDocument($callable): \DOMDocument
+    private function getCallableDocument(mixed $callable): \DOMDocument
     {
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->appendChild($callableXML = $dom->createElement('callable'));

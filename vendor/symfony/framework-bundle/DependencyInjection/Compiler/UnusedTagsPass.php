@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class UnusedTagsPass implements CompilerPassInterface
 {
-    private $knownTags = [
+    private const KNOWN_TAGS = [
         'annotations.cached_reader',
         'assets.package',
         'auto_alias',
@@ -30,6 +30,7 @@ class UnusedTagsPass implements CompilerPassInterface
         'chatter.transport_factory',
         'config_cache.resource_checker',
         'console.command',
+        'container.do_not_inline',
         'container.env_var_loader',
         'container.env_var_processor',
         'container.hot_path',
@@ -74,10 +75,10 @@ class UnusedTagsPass implements CompilerPassInterface
         'routing.expression_language_provider',
         'routing.loader',
         'routing.route_loader',
+        'security.authenticator.login_linker',
         'security.expression_language_provider',
         'security.remember_me_aware',
         'security.remember_me_handler',
-        'security.authenticator.login_linker',
         'security.voter',
         'serializer.encoder',
         'serializer.normalizer',
@@ -96,11 +97,11 @@ class UnusedTagsPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container)
     {
-        $tags = array_unique(array_merge($container->findTags(), $this->knownTags));
+        $tags = array_unique(array_merge($container->findTags(), self::KNOWN_TAGS));
 
         foreach ($container->findUnusedTags() as $tag) {
             // skip known tags
-            if (\in_array($tag, $this->knownTags)) {
+            if (\in_array($tag, self::KNOWN_TAGS)) {
                 continue;
             }
 

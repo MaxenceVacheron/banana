@@ -74,7 +74,7 @@ abstract class AbstractAdapter implements AdapterInterface, CacheInterface, Logg
                     $key = (string) $key;
                     if (null === $item->expiry) {
                         $ttl = 0 < $defaultLifetime ? $defaultLifetime : 0;
-                    } elseif (0 === $item->expiry) {
+                    } elseif (!$item->expiry) {
                         $ttl = 0;
                     } elseif (0 >= $ttl = (int) (0.1 + $item->expiry - $now)) {
                         $expiredIds[] = $getId($key);
@@ -98,10 +98,8 @@ abstract class AbstractAdapter implements AdapterInterface, CacheInterface, Logg
      * Returns the best possible adapter that your runtime supports.
      *
      * Using ApcuAdapter makes system caches compatible with read-only filesystems.
-     *
-     * @return AdapterInterface
      */
-    public static function createSystemCache(string $namespace, int $defaultLifetime, string $version, string $directory, LoggerInterface $logger = null)
+    public static function createSystemCache(string $namespace, int $defaultLifetime, string $version, string $directory, LoggerInterface $logger = null): AdapterInterface
     {
         $opcache = new PhpFilesAdapter($namespace, $defaultLifetime, $directory, true);
         if (null !== $logger) {
@@ -133,7 +131,11 @@ abstract class AbstractAdapter implements AdapterInterface, CacheInterface, Logg
             return MemcachedAdapter::createConnection($dsn, $options);
         }
         if (0 === strpos($dsn, 'couchbase:')) {
-            return CouchbaseBucketAdapter::createConnection($dsn, $options);
+            if (CouchbaseBucketAdapter::isSupported()) {
+                return CouchbaseBucketAdapter::createConnection($dsn, $options);
+            }
+
+            return CouchbaseCollectionAdapter::createConnection($dsn, $options);
         }
 
         throw new InvalidArgumentException(sprintf('Unsupported DSN: "%s".', $dsn));
@@ -141,17 +143,20 @@ abstract class AbstractAdapter implements AdapterInterface, CacheInterface, Logg
 
     /**
      * {@inheritdoc}
-     *
-     * @return bool
      */
-    public function commit()
+    public function commit(): bool
     {
         $ok = true;
         $byLifetime = (self::$mergeByLifetime)($this->deferred, $this->namespace, $expiredIds, \Closure::fromCallable([$this, 'getId']), $this->defaultLifetime);
         $retry = $this->deferred = [];
 
         if ($expiredIds) {
-            $this->doDelete($expiredIds);
+            try {
+                $this->doDelete($expiredIds);
+            } catch (\Exception $e) {
+                $ok = false;
+                CacheItem::log($this->logger, 'Failed to delete expired items: '.$e->getMessage(), ['exception' => $e, 'cache-adapter' => get_debug_type($this)]);
+            }
         }
         foreach ($byLifetime as $lifetime => $values) {
             try {

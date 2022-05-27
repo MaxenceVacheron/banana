@@ -139,12 +139,12 @@ class JsonDescriptor extends Descriptor
         $this->writeData($this->getEventDispatcherListenersData($eventDispatcher, $options), $options);
     }
 
-    protected function describeCallable($callable, array $options = [])
+    protected function describeCallable(mixed $callable, array $options = [])
     {
         $this->writeData($this->getCallableData($callable), $options);
     }
 
-    protected function describeContainerParameter($parameter, array $options = [])
+    protected function describeContainerParameter(mixed $parameter, array $options = [])
     {
         $key = $options['parameter'] ?? '';
 
@@ -183,6 +183,14 @@ class JsonDescriptor extends Descriptor
     private function writeData(array $data, array $options)
     {
         $flags = $options['json_encoding'] ?? 0;
+
+        // Recursively search for enum values, so we can replace it
+        // before json_encode (which will not display anything for \UnitEnum otherwise)
+        array_walk_recursive($data, static function (&$value) {
+            if ($value instanceof \UnitEnum) {
+                $value = ltrim(var_export($value, true), '\\');
+            }
+        });
 
         $this->write(json_encode($data, $flags | \JSON_PRETTY_PRINT)."\n");
     }
@@ -302,7 +310,7 @@ class JsonDescriptor extends Descriptor
         return $data;
     }
 
-    private function getCallableData($callable): array
+    private function getCallableData(mixed $callable): array
     {
         $data = [];
 
@@ -373,7 +381,7 @@ class JsonDescriptor extends Descriptor
         throw new \InvalidArgumentException('Callable is not describable.');
     }
 
-    private function describeValue($value, bool $omitTags, bool $showArguments)
+    private function describeValue(mixed $value, bool $omitTags, bool $showArguments): mixed
     {
         if (\is_array($value)) {
             $data = [];

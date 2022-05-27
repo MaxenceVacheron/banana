@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,6 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\Routing\Matcher\TraceableUrlMatcher;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -28,14 +30,15 @@ use Symfony\Component\Routing\RouterInterface;
  *
  * @final
  */
+#[AsCommand(name: 'router:match', description: 'Help debug routes by simulating a path info match')]
 class RouterMatchCommand extends Command
 {
-    protected static $defaultName = 'router:match';
-    protected static $defaultDescription = 'Help debug routes by simulating a path info match';
-
     private $router;
-    private $expressionLanguageProviders;
+    private iterable $expressionLanguageProviders;
 
+    /**
+     * @param iterable<mixed, ExpressionFunctionProviderInterface> $expressionLanguageProviders
+     */
     public function __construct(RouterInterface $router, iterable $expressionLanguageProviders = [])
     {
         parent::__construct();
@@ -56,7 +59,6 @@ class RouterMatchCommand extends Command
                 new InputOption('scheme', null, InputOption::VALUE_REQUIRED, 'Set the URI scheme (usually http or https)'),
                 new InputOption('host', null, InputOption::VALUE_REQUIRED, 'Set the URI host'),
             ])
-            ->setDescription(self::$defaultDescription)
             ->setHelp(<<<'EOF'
 The <info>%command.name%</info> shows which routes match a given request and which don't and for what reason:
 

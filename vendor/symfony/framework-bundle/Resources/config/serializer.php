@@ -32,6 +32,7 @@ use Symfony\Component\Serializer\Mapping\Loader\LoaderChain;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
+use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
 use Symfony\Component\Serializer\Normalizer\ConstraintViolationListNormalizer;
 use Symfony\Component\Serializer\Normalizer\DataUriNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer;
@@ -57,9 +58,7 @@ return static function (ContainerConfigurator $container) {
 
     $container->services()
         ->set('serializer', Serializer::class)
-            ->public()
             ->args([[], []])
-            ->tag('container.private', ['package' => 'symfony/framework-bundle', 'version' => '5.2'])
 
         ->alias(SerializerInterface::class, 'serializer')
         ->alias(NormalizerInterface::class, 'serializer')
@@ -98,6 +97,7 @@ return static function (ContainerConfigurator $container) {
             ->tag('serializer.normalizer', ['priority' => -910])
 
         ->set('serializer.normalizer.json_serializable', JsonSerializableNormalizer::class)
+            ->args([null, null])
             ->tag('serializer.normalizer', ['priority' => -900])
 
         ->set('serializer.normalizer.problem', ProblemNormalizer::class)
@@ -177,6 +177,7 @@ return static function (ContainerConfigurator $container) {
             ->tag('serializer.encoder')
 
         ->set('serializer.encoder.yaml', YamlEncoder::class)
+            ->args([null, null])
             ->tag('serializer.encoder')
 
         ->set('serializer.encoder.csv', CsvEncoder::class)
@@ -209,4 +210,11 @@ return static function (ContainerConfigurator $container) {
                     ->args([service('request_stack'), param('kernel.debug')]),
             ])
     ;
+
+    if (interface_exists(\BackedEnum::class)) {
+        $container->services()
+            ->set('serializer.normalizer.backed_enum', BackedEnumNormalizer::class)
+            ->tag('serializer.normalizer', ['priority' => -915])
+        ;
+    }
 };

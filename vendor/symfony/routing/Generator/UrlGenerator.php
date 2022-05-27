@@ -51,7 +51,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
 
     protected $logger;
 
-    private $defaultLocale;
+    private ?string $defaultLocale;
 
     /**
      * This array defines the characters (besides alphanumeric ones) that will not be percent-encoded in the path segment of the generated URL.
@@ -101,7 +101,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
     /**
      * {@inheritdoc}
      */
-    public function getContext()
+    public function getContext(): RequestContext
     {
         return $this->context;
     }
@@ -117,7 +117,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
     /**
      * {@inheritdoc}
      */
-    public function isStrictRequirements()
+    public function isStrictRequirements(): ?bool
     {
         return $this->strictRequirements;
     }
@@ -125,7 +125,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
     /**
      * {@inheritdoc}
      */
-    public function generate(string $name, array $parameters = [], int $referenceType = self::ABSOLUTE_PATH)
+    public function generate(string $name, array $parameters = [], int $referenceType = self::ABSOLUTE_PATH): string
     {
         $route = null;
         $locale = $parameters['_locale']
@@ -165,10 +165,8 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
      * @throws MissingMandatoryParametersException When some parameters are missing that are mandatory for the route
      * @throws InvalidParameterException           When a parameter value for a placeholder is not correct because
      *                                             it does not match the requirement
-     *
-     * @return string
      */
-    protected function doGenerate(array $variables, array $defaults, array $requirements, array $tokens, array $parameters, string $name, int $referenceType, array $hostTokens, array $requiredSchemes = [])
+    protected function doGenerate(array $variables, array $defaults, array $requirements, array $tokens, array $parameters, string $name, int $referenceType, array $hostTokens, array $requiredSchemes = []): string
     {
         $variables = array_flip($variables);
         $mergedParams = array_replace($defaults, $this->context->getParameters(), $parameters);
@@ -295,6 +293,17 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
             return $a == $b ? 0 : 1;
         });
 
+        array_walk_recursive($extra, $caster = static function (&$v) use (&$caster) {
+            if (\is_object($v)) {
+                if ($vars = get_object_vars($v)) {
+                    array_walk_recursive($vars, $caster);
+                    $v = $vars;
+                } elseif (method_exists($v, '__toString')) {
+                    $v = (string) $v;
+                }
+            }
+        });
+
         // extract fragment
         $fragment = $defaults['_fragment'] ?? '';
 
@@ -331,10 +340,8 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
      *
      * @param string $basePath   The base path
      * @param string $targetPath The target path
-     *
-     * @return string The relative target path
      */
-    public static function getRelativePath(string $basePath, string $targetPath)
+    public static function getRelativePath(string $basePath, string $targetPath): string
     {
         if ($basePath === $targetPath) {
             return '';
